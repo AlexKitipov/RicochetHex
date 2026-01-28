@@ -31,6 +31,12 @@ export const MoveHistory: React.FC<MoveHistoryProps> = ({ moves, currentIndex })
     if (move.isRicochet) {
       text += ' ⟲';
     }
+    if (move.neutralized) {
+      text += ' ⊘';
+    }
+    if (move.recovered) {
+      text += ' ↺';
+    }
     if (move.captured) {
       text += ' ✕';
     }
@@ -78,9 +84,11 @@ export const MoveHistory: React.FC<MoveHistoryProps> = ({ moves, currentIndex })
       </ScrollArea>
       
       <div className="px-4 py-2 border-t border-border text-xs text-muted-foreground">
-        <div className="flex gap-4">
+        <div className="flex gap-3 flex-wrap">
           <span>⟲ = Рикошет</span>
-          <span>✕ = Неутрализация</span>
+          <span>⊘ = Неутрализация</span>
+          <span>↺ = Възстановяване</span>
+          <span>✕ = Захващане</span>
         </div>
       </div>
     </div>
