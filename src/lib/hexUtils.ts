@@ -14,6 +14,7 @@ export type PawnState = 'active' | 'neutralized';
 export interface Pawn {
   color: PlayerColor;
   state: PawnState;
+  number: number;
 }
 
 export interface Move {
@@ -21,7 +22,9 @@ export interface Move {
   to: HexCoord;
   player: PlayerColor;
   isRicochet: boolean;
-  captured?: HexCoord;
+  neutralized?: HexCoord;
+  recovered?: HexCoord;
+  captured?: HexCoord; // Pawn removed from board
   moveNumber: number;
 }
 
@@ -285,36 +288,142 @@ export function getOpponentColor(color: PlayerColor): PlayerColor {
   return color === 'blue' ? 'red' : 'blue';
 }
 
-// Check for neutralization after a move
-export function checkNeutralization(
+// Check for sandwich effects: neutralization and recovery
+export function checkSandwichEffects(
   movedToHex: HexCoord,
   playerColor: PlayerColor,
   pawns: Map<string, Pawn>
-): HexCoord | null {
+): { neutralized: HexCoord[]; recovered: HexCoord[] } {
   const opponentColor = getOpponentColor(playerColor);
+  const neutralized: HexCoord[] = [];
+  const recovered: HexCoord[] = [];
+  
+  // Neutralized colors mapping
+  const isNeutralized = (pawn: Pawn) => pawn.state === 'neutralized';
   
   for (const [dq, dr] of HEX_DIRECTIONS) {
     const neighborHex: HexCoord = { 
       q: movedToHex.q + dq, 
       r: movedToHex.r + dr 
     };
-    const neighborPawn = pawns.get(hexKey(neighborHex));
+    const farHex: HexCoord = { 
+      q: neighborHex.q + dq, 
+      r: neighborHex.r + dr 
+    };
     
-    if (neighborPawn && neighborPawn.color === opponentColor && neighborPawn.state === 'active') {
-      // Check for ally on the other side
-      const allyHex: HexCoord = { 
-        q: neighborHex.q + dq, 
-        r: neighborHex.r + dr 
-      };
-      const allyPawn = pawns.get(hexKey(allyHex));
+    const neighborPawn = pawns.get(hexKey(neighborHex));
+    const farPawn = pawns.get(hexKey(farHex));
+    
+    if (neighborPawn && farPawn) {
+      // Check for neutralization: [Moved] - [Opponent Active] - [Ally Active]
+      if (neighborPawn.color === opponentColor && 
+          neighborPawn.state === 'active' && 
+          farPawn.color === playerColor && 
+          farPawn.state === 'active') {
+        neutralized.push(neighborHex);
+      }
       
-      if (allyPawn && allyPawn.color === playerColor && allyPawn.state === 'active') {
-        return neighborHex; // This pawn should be neutralized
+      // Check for recovery: [Moved] - [Friendly Neutralized] - [Ally Active]
+      if (neighborPawn.color === playerColor && 
+          isNeutralized(neighborPawn) && 
+          farPawn.color === playerColor && 
+          farPawn.state === 'active') {
+        recovered.push(neighborHex);
+      }
+    }
+    
+    // Also check backwards for recovery (moved pawn is second bread piece)
+    const prevNeighborHex: HexCoord = { 
+      q: movedToHex.q - dq, 
+      r: movedToHex.r - dr 
+    };
+    const prevFarHex: HexCoord = { 
+      q: prevNeighborHex.q - dq, 
+      r: prevNeighborHex.r - dr 
+    };
+    
+    const prevNeighborPawn = pawns.get(hexKey(prevNeighborHex));
+    const prevFarPawn = pawns.get(hexKey(prevFarHex));
+    
+    if (prevNeighborPawn && prevFarPawn) {
+      if (prevNeighborPawn.color === playerColor && 
+          isNeutralized(prevNeighborPawn) && 
+          prevFarPawn.color === playerColor && 
+          prevFarPawn.state === 'active') {
+        if (!recovered.some(h => h.q === prevNeighborHex.q && h.r === prevNeighborHex.r)) {
+          recovered.push(prevNeighborHex);
+        }
       }
     }
   }
   
-  return null;
+  return { neutralized, recovered };
+}
+
+// Check for capture: 3 friendly pawns in a row adjacent to opponent
+export function checkCapture(
+  movedToHex: HexCoord,
+  playerColor: PlayerColor,
+  pawns: Map<string, Pawn>
+): HexCoord[] {
+  const opponentColor = getOpponentColor(playerColor);
+  const captured: HexCoord[] = [];
+  
+  for (const [dq, dr] of HEX_DIRECTIONS) {
+    // Scenario 1: [F] - [F] - [Moved] - [Opponent]
+    const p1Hex: HexCoord = { q: movedToHex.q - 2 * dq, r: movedToHex.r - 2 * dr };
+    const p2Hex: HexCoord = { q: movedToHex.q - dq, r: movedToHex.r - dr };
+    const captureHex1: HexCoord = { q: movedToHex.q + dq, r: movedToHex.r + dr };
+    
+    const p1 = pawns.get(hexKey(p1Hex));
+    const p2 = pawns.get(hexKey(p2Hex));
+    const target1 = pawns.get(hexKey(captureHex1));
+    
+    if (p1 && p2 && target1 &&
+        p1.color === playerColor && p1.state === 'active' &&
+        p2.color === playerColor && p2.state === 'active' &&
+        target1.color === opponentColor && target1.state === 'active') {
+      if (!captured.some(h => h.q === captureHex1.q && h.r === captureHex1.r)) {
+        captured.push(captureHex1);
+      }
+    }
+    
+    // Scenario 2: [F] - [Moved] - [F] - [Opponent]
+    const p3Hex: HexCoord = { q: movedToHex.q + dq, r: movedToHex.r + dr };
+    const captureHex2: HexCoord = { q: movedToHex.q + 2 * dq, r: movedToHex.r + 2 * dr };
+    
+    const p1s2 = pawns.get(hexKey(p2Hex)); // Same as p2Hex
+    const p3 = pawns.get(hexKey(p3Hex));
+    const target2 = pawns.get(hexKey(captureHex2));
+    
+    if (p1s2 && p3 && target2 &&
+        p1s2.color === playerColor && p1s2.state === 'active' &&
+        p3.color === playerColor && p3.state === 'active' &&
+        target2.color === opponentColor && target2.state === 'active') {
+      if (!captured.some(h => h.q === captureHex2.q && h.r === captureHex2.r)) {
+        captured.push(captureHex2);
+      }
+    }
+    
+    // Scenario 3: [Moved] - [F] - [F] - [Opponent]
+    const p4Hex: HexCoord = { q: movedToHex.q + 2 * dq, r: movedToHex.r + 2 * dr };
+    const captureHex3: HexCoord = { q: movedToHex.q + 3 * dq, r: movedToHex.r + 3 * dr };
+    
+    const p3s3 = pawns.get(hexKey(p3Hex));
+    const p4 = pawns.get(hexKey(p4Hex));
+    const target3 = pawns.get(hexKey(captureHex3));
+    
+    if (p3s3 && p4 && target3 &&
+        p3s3.color === playerColor && p3s3.state === 'active' &&
+        p4.color === playerColor && p4.state === 'active' &&
+        target3.color === opponentColor && target3.state === 'active') {
+      if (!captured.some(h => h.q === captureHex3.q && h.r === captureHex3.r)) {
+        captured.push(captureHex3);
+      }
+    }
+  }
+  
+  return captured;
 }
 
 // Check win condition (3+ active pawns on opponent's back rank)
@@ -345,27 +454,50 @@ export function checkWinCondition(
   return null;
 }
 
-// Create initial pawns setup
+// Create initial pawns setup with correct placement (27 pawns per side)
 export function createInitialPawns(sideLength: number = SIDE_LENGTH): Map<string, Pawn> {
   const pawns = new Map<string, Pawn>();
-  const hexGrid = generateHexGrid(sideLength);
+  let blueNumber = 0;
+  let redNumber = 0;
   
-  // Blue pawns in top three rows (r = 7, 6, 5 for sideLength=8)
-  for (let rVal = sideLength - 1; rVal >= sideLength - 3; rVal--) {
-    hexGrid.forEach(coord => {
-      if (coord.r === rVal) {
-        pawns.set(hexKey(coord), { color: 'blue', state: 'active' });
+  // Blue pawn placements: r=7 (8 pawns), r=6 (9 pawns), r=5 (10 pawns) = 27 total
+  const bluePlacements: [number, number, number][] = [
+    [7, -7, 0],   // r=7, q from -7 to 0 (8 pawns)
+    [6, -7, 1],   // r=6, q from -7 to 1 (9 pawns)
+    [5, -7, 2]    // r=5, q from -7 to 2 (10 pawns)
+  ];
+  
+  // Red pawn placements: r=-7 (8 pawns), r=-6 (9 pawns), r=-5 (10 pawns) = 27 total
+  const redPlacements: [number, number, number][] = [
+    [-7, 0, 7],   // r=-7, q from 0 to 7 (8 pawns)
+    [-6, -1, 7],  // r=-6, q from -1 to 7 (9 pawns)
+    [-5, -2, 7]   // r=-5, q from -2 to 7 (10 pawns)
+  ];
+  
+  // Place blue pawns
+  for (const [rVal, qMin, qMax] of bluePlacements) {
+    for (let q = qMin; q <= qMax; q++) {
+      if (isValidHex({ q, r: rVal }, sideLength)) {
+        pawns.set(hexKey({ q, r: rVal }), { 
+          color: 'blue', 
+          state: 'active',
+          number: blueNumber++
+        });
       }
-    });
+    }
   }
   
-  // Red pawns in bottom three rows (r = -7, -6, -5 for sideLength=8)
-  for (let rVal = -(sideLength - 1); rVal <= -(sideLength - 3); rVal++) {
-    hexGrid.forEach(coord => {
-      if (coord.r === rVal) {
-        pawns.set(hexKey(coord), { color: 'red', state: 'active' });
+  // Place red pawns
+  for (const [rVal, qMin, qMax] of redPlacements) {
+    for (let q = qMin; q <= qMax; q++) {
+      if (isValidHex({ q, r: rVal }, sideLength)) {
+        pawns.set(hexKey({ q, r: rVal }), { 
+          color: 'red', 
+          state: 'active',
+          number: redNumber++
+        });
       }
-    });
+    }
   }
   
   return pawns;

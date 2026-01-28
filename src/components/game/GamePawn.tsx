@@ -6,6 +6,7 @@ interface GamePawnProps {
   centerY: number;
   size: number;
   color: PlayerColor;
+  number: number;
   isNeutralized: boolean;
   isSelected: boolean;
   onClick: () => void;
@@ -16,16 +17,20 @@ export const GamePawn: React.FC<GamePawnProps> = ({
   centerY,
   size,
   color,
+  number,
   isNeutralized,
   isSelected,
   onClick
 }) => {
-  const radius = size / 2.8;
+  const radius = size / 1.15; // Larger pawn to match Python code
   
   let gradientId = color === 'blue' ? 'bluePawnGradient' : 'redPawnGradient';
   if (isNeutralized) {
     gradientId = color === 'blue' ? 'neutralizedBlueGradient' : 'neutralizedRedGradient';
   }
+
+  // Text color for visibility
+  const textColor = color === 'blue' && !isNeutralized ? 'white' : 'black';
 
   return (
     <g 
@@ -55,14 +60,19 @@ export const GamePawn: React.FC<GamePawnProps> = ({
         className="fill-white/30 pointer-events-none"
       />
       
-      {/* Inner detail circle */}
-      <circle
-        cx={centerX}
-        cy={centerY}
-        r={radius * 0.5}
-        className="fill-none stroke-white/20"
-        strokeWidth="1"
-      />
+      {/* Pawn number */}
+      <text
+        x={centerX}
+        y={centerY}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fill={textColor}
+        fontSize={size * 0.45}
+        fontWeight="bold"
+        className="pointer-events-none select-none"
+      >
+        {number}
+      </text>
       
       {/* Neutralized X mark */}
       {isNeutralized && (

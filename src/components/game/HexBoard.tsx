@@ -156,6 +156,7 @@ export const HexBoard: React.FC<HexBoardProps> = ({
               centerY={centerY}
               size={HEX_SIZE}
               color={pawn.color}
+              number={pawn.number}
               isNeutralized={pawn.state === 'neutralized'}
               isSelected={isSelected(coord)}
               onClick={() => onHexClick(coord)}
