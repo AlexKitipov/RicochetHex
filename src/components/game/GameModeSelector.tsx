@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Users, Bot, Zap, Brain } from 'lucide-react';
+import { Users, Bot, Zap, Brain, Sparkles } from 'lucide-react';
 import type { AIDifficulty } from '@/lib/gameAI';
 
 export type GameMode = 'local' | 'vs-ai';
@@ -80,7 +80,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
               <RadioGroup
                 value={difficulty}
                 onValueChange={(value) => setDifficulty(value as AIDifficulty)}
-                className="grid grid-cols-2 gap-3"
+                className="grid grid-cols-3 gap-3"
               >
                 <div>
                   <RadioGroupItem
@@ -110,11 +110,27 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                     <span className="font-medium">Средно</span>
                   </Label>
                 </div>
+                <div>
+                  <RadioGroupItem
+                    value="hard"
+                    id="hard"
+                    className="peer sr-only"
+                  />
+                  <Label
+                    htmlFor="hard"
+                    className="flex items-center justify-center gap-2 rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+                  >
+                    <Sparkles className="h-4 w-4 text-red-500" />
+                    <span className="font-medium">Трудно</span>
+                  </Label>
+                </div>
               </RadioGroup>
               <p className="text-xs text-muted-foreground">
                 {difficulty === 'easy' 
                   ? '🎲 AI избира случайни валидни ходове'
-                  : '🧠 AI оценява и избира стратегически най-добрите ходове'
+                  : difficulty === 'medium'
+                  ? '🧠 AI оценява и избира стратегически най-добрите ходове'
+                  : '♟️ AI използва minimax алгоритъм за оптимална игра'
                 }
               </p>
             </div>
