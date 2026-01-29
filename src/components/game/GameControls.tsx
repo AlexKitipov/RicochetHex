@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Undo2, Redo2, RotateCcw, Volume2, VolumeX, HelpCircle } from 'lucide-react';
+import { Undo2, Redo2, RotateCcw, Volume2, VolumeX, HelpCircle, Bot, Users, ArrowLeft, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import type { AIDifficulty } from '@/lib/gameAI';
+
+type GameMode = 'local' | 'vs-ai';
 
 interface GameControlsProps {
   currentPlayer: 'blue' | 'red';
@@ -21,6 +24,10 @@ interface GameControlsProps {
   onRedo: () => void;
   onReset: () => void;
   onToggleSound: () => void;
+  gameMode: GameMode;
+  aiDifficulty: AIDifficulty;
+  isAIThinking: boolean;
+  onChangeMode: () => void;
 }
 
 export const GameControls: React.FC<GameControlsProps> = ({
@@ -33,10 +40,36 @@ export const GameControls: React.FC<GameControlsProps> = ({
   onUndo,
   onRedo,
   onReset,
-  onToggleSound
+  onToggleSound,
+  gameMode,
+  aiDifficulty,
+  isAIThinking,
+  onChangeMode
 }) => {
   return (
     <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+      {/* Game Mode Badge */}
+      <div className="flex items-center justify-center gap-2">
+        <div className={`
+          inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium
+          ${gameMode === 'vs-ai' 
+            ? 'bg-destructive/10 text-destructive' 
+            : 'bg-primary/10 text-primary'}
+        `}>
+          {gameMode === 'vs-ai' ? (
+            <>
+              <Bot className="h-3 w-3" />
+              Срещу AI ({aiDifficulty === 'easy' ? 'Лесно' : 'Средно'})
+            </>
+          ) : (
+            <>
+              <Users className="h-3 w-3" />
+              Локален мултиплейър
+            </>
+          )}
+        </div>
+      </div>
+      
       {/* Player Indicator */}
       <div className="text-center">
         {gameOver ? (
@@ -55,7 +88,17 @@ export const GameControls: React.FC<GameControlsProps> = ({
                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' 
                 : 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'}
             `}>
-              {currentPlayer === 'blue' ? '🔵 Сините' : '🔴 Червените'}
+              {isAIThinking ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  AI мисли...
+                </>
+              ) : (
+                <>
+                  {currentPlayer === 'blue' ? '🔵 Сините' : '🔴 Червените'}
+                  {gameMode === 'vs-ai' && currentPlayer === 'red' && ' (AI)'}
+                </>
+              )}
             </div>
           </div>
         )}
@@ -106,6 +149,17 @@ export const GameControls: React.FC<GameControlsProps> = ({
           ) : (
             <VolumeX className="h-4 w-4" />
           )}
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onChangeMode}
+          className="gap-1"
+          disabled={isAIThinking}
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="hidden sm:inline">Меню</span>
         </Button>
         
         <Dialog>
