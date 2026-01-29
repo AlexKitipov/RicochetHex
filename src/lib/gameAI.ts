@@ -13,7 +13,7 @@ import {
   SIDE_LENGTH
 } from './hexUtils';
 
-export type AIDifficulty = 'easy' | 'medium';
+export type AIDifficulty = 'easy' | 'medium' | 'hard';
 
 export interface AIMove {
   from: HexCoord;
@@ -294,6 +294,113 @@ export function getBestMove(
   return bestMove;
 }
 
+// Minimax with alpha-beta pruning for Hard difficulty
+function minimax(
+  pawns: Map<string, Pawn>,
+  player: PlayerColor,
+  depth: number,
+  alpha: number,
+  beta: number,
+  maximizingPlayer: boolean,
+  originalPlayer: PlayerColor
+): number {
+  // Check for terminal state or depth limit
+  if (depth === 0) {
+    return evaluatePosition(pawns, originalPlayer);
+  }
+  
+  // Check for game over conditions
+  const targetRankBlue = -(SIDE_LENGTH - 1);
+  const targetRankRed = SIDE_LENGTH - 1;
+  
+  let blueOnTarget = 0;
+  let redOnTarget = 0;
+  let blueActive = 0;
+  let redActive = 0;
+  
+  pawns.forEach((pawn, key) => {
+    const coord = parseHexKey(key);
+    if (pawn.state === 'active') {
+      if (pawn.color === 'blue') {
+        blueActive++;
+        if (coord.r === targetRankBlue) blueOnTarget++;
+      } else {
+        redActive++;
+        if (coord.r === targetRankRed) redOnTarget++;
+      }
+    }
+  });
+  
+  // Terminal conditions
+  if (blueOnTarget >= 2 || redActive === 0) {
+    return originalPlayer === 'blue' ? 10000 + depth : -10000 - depth;
+  }
+  if (redOnTarget >= 2 || blueActive === 0) {
+    return originalPlayer === 'red' ? 10000 + depth : -10000 - depth;
+  }
+  
+  const currentPlayer = maximizingPlayer ? originalPlayer : getOpponentColor(originalPlayer);
+  const moves = getAllValidMoves(pawns, currentPlayer);
+  
+  if (moves.length === 0) {
+    return evaluatePosition(pawns, originalPlayer);
+  }
+  
+  if (maximizingPlayer) {
+    let maxEval = -Infinity;
+    
+    for (const move of moves) {
+      const { newPawns } = simulateMove(move.from, move.to, pawns, currentPlayer);
+      const evalScore = minimax(newPawns, player, depth - 1, alpha, beta, false, originalPlayer);
+      maxEval = Math.max(maxEval, evalScore);
+      alpha = Math.max(alpha, evalScore);
+      if (beta <= alpha) break; // Alpha-beta pruning
+    }
+    
+    return maxEval;
+  } else {
+    let minEval = Infinity;
+    
+    for (const move of moves) {
+      const { newPawns } = simulateMove(move.from, move.to, pawns, currentPlayer);
+      const evalScore = minimax(newPawns, player, depth - 1, alpha, beta, true, originalPlayer);
+      minEval = Math.min(minEval, evalScore);
+      beta = Math.min(beta, evalScore);
+      if (beta <= alpha) break; // Alpha-beta pruning
+    }
+    
+    return minEval;
+  }
+}
+
+
+// Get best move using minimax (Hard difficulty)
+export function getMinimaxMove(
+  pawns: Map<string, Pawn>,
+  player: PlayerColor,
+  depth: number = 3
+): AIMove | null {
+  const allMoves = getAllValidMoves(pawns, player);
+  
+  if (allMoves.length === 0) return null;
+  
+  let bestMove = allMoves[0];
+  let bestScore = -Infinity;
+  
+  for (const move of allMoves) {
+    const { newPawns } = simulateMove(move.from, move.to, pawns, player);
+    const score = minimax(newPawns, player, depth - 1, -Infinity, Infinity, false, player);
+    move.score = score;
+    
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
+    }
+  }
+  
+  return bestMove;
+}
+
 // Main AI function to get the AI's move based on difficulty
 export function getAIMove(
   pawns: Map<string, Pawn>,
@@ -302,6 +409,9 @@ export function getAIMove(
 ): AIMove | null {
   if (difficulty === 'easy') {
     return getRandomMove(pawns, player);
+  }
+  if (difficulty === 'hard') {
+    return getMinimaxMove(pawns, player, 3);
   }
   return getBestMove(pawns, player);
 }

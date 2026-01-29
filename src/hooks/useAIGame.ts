@@ -30,7 +30,7 @@ export function useAIGame(options: UseAIGameOptions) {
     setIsAIThinking(true);
     
     // Add delay for natural feel
-    const thinkingTime = difficulty === 'easy' ? 500 : 800;
+    const thinkingTime = difficulty === 'easy' ? 500 : difficulty === 'medium' ? 800 : 1200;
     
     aiTimeoutRef.current = setTimeout(() => {
       const move = getAIMove(gameState.pawns, 'red', difficulty);
