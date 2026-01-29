@@ -1,142 +1,181 @@
 
-# План за оправяне на Undo/Redo бъга
+# План за добавяне на AI опонент
 
-## Открит проблем
+## Обзор
 
-При натискане на **Undo** бутона, дъската става празна вместо да покаже предишното състояние на играта. Проблемът е в несинхронизирането между `gameState` и `pawnSnapshots` state-овете.
-
-## Анализ на бъга
-
-Проблемът е в начина, по който snapshot-ите се индексират и възстановяват:
-
-1. **Начално състояние**: 
-   - `historyIndex = -1`
-   - `pawnSnapshots = [initialPawns]` (1 елемент на индекс 0)
-
-2. **След първия ход**:
-   - `historyIndex = 0`  
-   - `pawnSnapshots = [initialPawns, afterMove1Pawns]` (2 елемента)
-
-3. **При Undo от historyIndex=0**:
-   - Кодът се опитва да вземе `pawnSnapshots[0]` = началното състояние
-   - НО `setPawnSnapshots` се изпълнява асинхронно и може да не е завършила когато се извиква `undo`
-
-Основният проблем е, че `pawnSnapshots` е отделен React state от `gameState`, и може да има race condition между двата.
+Ще добавя AI противник, който може да играе срещу играча. AI ще има два режима на трудност:
+- **Лесен** - случайни валидни ходове
+- **Среден** - базова стратегия с оценка на позициите
 
 ---
 
-## Решение
+## Нови файлове
 
-Ще преработя системата за Undo/Redo, като вградя snapshot-ите директно в `gameState` обекта, за да се гарантира атомарност на обновленията.
+### 1. `src/lib/gameAI.ts` - AI логика
 
-### Промени в `src/hooks/useGameState.ts`:
-
-1. **Премахване на отделния `pawnSnapshots` state** - вместо това ще пазим snapshot-ите като част от `GameState`
-
-2. **Добавяне на `pawnHistory` в GameState interface** в `hexUtils.ts`:
-   ```typescript
-   export interface GameState {
-     // ... existing fields
-     pawnHistory: Map<string, Pawn>[]; // Добавяме масив със snapshot-и
-   }
-   ```
-
-3. **Преработка на executeMove**:
-   - Запазва snapshot-а като част от същия `setGameState` call
-   - Гарантира атомарност
-
-4. **Преработка на undo/redo**:
-   - Използва `pawnHistory` от вътре в state-a
-   - Няма race conditions
-
-### Алтернативно по-просто решение:
-
-Може да използваме един snapshot на ход, но да го запазваме **преди** хода се изпълни:
-
-```typescript
-const executeMove = useCallback((from: HexCoord, to: HexCoord) => {
-  // Save current state BEFORE making changes
-  setPawnSnapshots(prev => [...prev, new Map(gameState.pawns)]);
-  
-  setGameState(prev => {
-    // ... move logic
-  });
-}, [gameState.pawns, playSound]);
+```text
+┌─────────────────────────────────────────────────────┐
+│                    AI Engine                        │
+├─────────────────────────────────────────────────────┤
+│  • getAllValidMoves(pawns, player)                  │
+│    - Връща всички възможни ходове за играч         │
+│                                                     │
+│  • evaluatePosition(pawns, player)                  │
+│    - Оценява текущата позиция                       │
+│    - Фактори: позиция към целта, активни пешки,    │
+│      заплахи за неутрализация/залавяне             │
+│                                                     │
+│  • evaluateMove(from, to, pawns, player)           │
+│    - Симулира ход и оценява резултата              │
+│                                                     │
+│  • getRandomMove(pawns, player)                     │
+│    - Избира случаен валиден ход (Easy mode)        │
+│                                                     │
+│  • getBestMove(pawns, player)                       │
+│    - Оценява всички ходове и избира най-добрия     │
+│    - Използва evaluateMove за scoring              │
+└─────────────────────────────────────────────────────┘
 ```
 
-И при undo:
+**Критерии за оценка на ходове:**
+- +50 точки: Ход към противниковия заден ред
+- +30 точки: Ход напред към целта
+- +40 точки: Ход който неутрализира противник
+- +60 точки: Ход който залавя противникова пешка
+- +25 точки: Ход който възстановява своя пешка
+- -20 точки: Ход който излага пешка на неутрализация
+- +10 точки: Защитен ход (близо до свои пешки)
+
+### 2. `src/hooks/useAIGame.ts` - AI game state hook
+
+Разширява `useGameState` с:
+- `gameMode: 'local' | 'vs-ai'`
+- `aiDifficulty: 'easy' | 'medium'`
+- `isAIThinking: boolean`
+- Автоматично изпълнява AI ход когато е ред на AI
+- Добавя закъснение (500-1000ms) за по-естествено усещане
+
+---
+
+## Модификации на съществуващи файлове
+
+### 3. `src/pages/Index.tsx`
+
+Добавям:
+- Game mode selection UI преди играта
+- Показване кога AI "мисли"
+- Използване на `useAIGame` вместо `useGameState`
+
+### 4. `src/components/game/GameControls.tsx`
+
+Добавям:
+- Индикатор за game mode (Local / vs AI)
+- Dropdown за избор на трудност
+- Бутон за смяна на режима
+
+### 5. `src/components/game/GameModeSelector.tsx` (нов)
+
+Компонент за избор на режим преди започване:
+```text
+┌────────────────────────────────────────┐
+│         🎮 Избери режим               │
+├────────────────────────────────────────┤
+│  ┌──────────┐    ┌──────────────────┐  │
+│  │ 👥       │    │ 🤖               │  │
+│  │ Локален  │    │ Срещу AI         │  │
+│  │мултиплейр│    │                  │  │
+│  └──────────┘    │ Трудност:        │  │
+│                  │ ○ Лесно          │  │
+│                  │ ○ Средно         │  │
+│                  └──────────────────┘  │
+│                                        │
+│        [ Започни игра ]               │
+└────────────────────────────────────────┘
+```
+
+---
+
+## Технически детайли
+
+### AI алгоритъм (Medium difficulty)
+
 ```typescript
-const undo = useCallback(() => {
-  if (gameState.historyIndex < 0) return;
+function getBestMove(pawns: Map<string, Pawn>, player: PlayerColor): {from: HexCoord, to: HexCoord} {
+  const allMoves = getAllValidMoves(pawns, player);
   
-  const previousPawns = pawnSnapshots[gameState.historyIndex];
-  // ...
-}, [gameState.historyIndex, pawnSnapshots]);
+  let bestMove = allMoves[0];
+  let bestScore = -Infinity;
+  
+  for (const move of allMoves) {
+    const score = evaluateMove(move.from, move.to, pawns, player);
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = move;
+    }
+  }
+  
+  return bestMove;
+}
+```
+
+### AI timing
+
+```typescript
+// В useAIGame hook
+useEffect(() => {
+  if (gameMode === 'vs-ai' && currentPlayer === 'red' && !gameOver) {
+    setIsAIThinking(true);
+    
+    const thinkingTime = aiDifficulty === 'easy' ? 500 : 800;
+    
+    setTimeout(() => {
+      const move = aiDifficulty === 'easy' 
+        ? getRandomMove(pawns, 'red')
+        : getBestMove(pawns, 'red');
+      
+      if (move) {
+        executeMove(move.from, move.to);
+      }
+      setIsAIThinking(false);
+    }, thinkingTime);
+  }
+}, [currentPlayer, gameMode, gameOver]);
 ```
 
 ---
 
 ## Стъпки за имплементация
 
-1. **Добави `pawnHistory` към `GameState`** в `src/lib/hexUtils.ts`
+1. **Създай `src/lib/gameAI.ts`**
+   - `getAllValidMoves()` - събира всички възможни ходове
+   - `evaluatePosition()` - оценява board state
+   - `evaluateMove()` - симулира и оценява ход
+   - `getRandomMove()` - за лесен режим
+   - `getBestMove()` - за среден режим
 
-2. **Преработи `useGameState.ts`**:
-   - Инициализирай `pawnHistory: [createInitialPawns()]` в началния state
-   - В `executeMove`: добавяй current pawns към `pawnHistory` преди да правиш промени
-   - В `undo`: вземай предишните pawns от `prev.pawnHistory[prev.historyIndex]`
-   - В `redo`: вземай следващите pawns от `prev.pawnHistory[prev.historyIndex + 2]`
-   - Премахни отделния `pawnSnapshots` useState
+2. **Създай `src/components/game/GameModeSelector.tsx`**
+   - UI за избор на режим и трудност
+   - Radio buttons за local/AI
+   - Dropdown за трудност
 
-3. **Тестване**:
-   - Направи ход
-   - Натисни Undo - трябва да се върне предишното състояние
-   - Натисни Redo - трябва да се върне след-хода състояние
-   - Направи няколко хода и тествай Undo/Redo многократно
+3. **Създай `src/hooks/useAIGame.ts`**
+   - Wrap-ва useGameState логиката
+   - Добавя AI turn handling
+   - Управлява game mode state
+
+4. **Модифицирай `src/pages/Index.tsx`**
+   - Добави state за показване на mode selector
+   - Интегрирай новия hook
+   - Покажи AI thinking indicator
+
+5. **Модифицирай `src/components/game/GameControls.tsx`**
+   - Добави game mode indicator
+   - Деактивирай undo/redo по време на AI turn
 
 ---
 
-## Технически детайли
+## Бъдещи подобрения (извън този план)
 
-### Обновен GameState interface:
-```typescript
-export interface GameState {
-  pawns: Map<string, Pawn>;
-  currentPlayer: PlayerColor;
-  selectedHex: HexCoord | null;
-  possibleMoves: HexCoord[];
-  ricochetPath: HexCoord[];
-  moveHistory: Move[];
-  historyIndex: number;
-  gameOver: boolean;
-  winner: PlayerColor | null;
-  pawnHistory: Map<string, Pawn>[]; // NEW
-}
-```
-
-### Обновена undo функция:
-```typescript
-const undo = useCallback(() => {
-  if (gameState.historyIndex < 0 || gameState.gameOver) return;
-
-  setGameState(prev => {
-    const move = prev.moveHistory[prev.historyIndex];
-    if (!move) return prev;
-
-    // Index 0 = initial state, Index 1 = after move 1, etc.
-    // To undo move at historyIndex N, we need pawnHistory[N]
-    const previousPawns = prev.pawnHistory[prev.historyIndex];
-    
-    if (!previousPawns) return prev;
-
-    return {
-      ...prev,
-      pawns: new Map(previousPawns),
-      currentPlayer: move.player,
-      historyIndex: prev.historyIndex - 1,
-      selectedHex: null,
-      possibleMoves: [],
-      ricochetPath: []
-    };
-  });
-}, [gameState.historyIndex, gameState.gameOver]);
-```
+- **Hard difficulty**: Minimax алгоритъм с alpha-beta pruning
+- **AI играе с Сините**: Опция играчът да избере цвят
+- **AI vs AI**: Режим за наблюдение
