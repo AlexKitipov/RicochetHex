@@ -1,26 +1,28 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useGameState } from './useGameState';
 import { getAIMove, AIDifficulty } from '@/lib/gameAI';
-import { hexKey } from '@/lib/hexUtils';
+import { hexKey, PlayerColor, getOpponentColor } from '@/lib/hexUtils';
 
 export type GameMode = 'local' | 'vs-ai';
 
 interface UseAIGameOptions {
   mode: GameMode;
   difficulty: AIDifficulty;
+  playerColor: PlayerColor;
 }
 
 export function useAIGame(options: UseAIGameOptions) {
-  const { mode, difficulty } = options;
+  const { mode, difficulty, playerColor } = options;
   const gameStateHook = useGameState();
   const { gameState, selectHex, resetGame: baseResetGame } = gameStateHook;
   
   const [isAIThinking, setIsAIThinking] = useState(false);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // AI plays as red
+  // AI plays as opponent color
+  const aiColor = getOpponentColor(playerColor);
   const isAITurn = mode === 'vs-ai' && 
-                   gameState.currentPlayer === 'red' && 
+                   gameState.currentPlayer === aiColor && 
                    !gameState.gameOver;
 
   // Execute AI move
@@ -33,7 +35,7 @@ export function useAIGame(options: UseAIGameOptions) {
     const thinkingTime = difficulty === 'easy' ? 500 : difficulty === 'medium' ? 800 : 1200;
     
     aiTimeoutRef.current = setTimeout(() => {
-      const move = getAIMove(gameState.pawns, 'red', difficulty);
+      const move = getAIMove(gameState.pawns, aiColor, difficulty);
       
       if (move) {
         // First select the pawn
@@ -48,7 +50,7 @@ export function useAIGame(options: UseAIGameOptions) {
         setIsAIThinking(false);
       }
     }, thinkingTime);
-  }, [isAITurn, isAIThinking, gameState.pawns, difficulty, selectHex]);
+  }, [isAITurn, isAIThinking, gameState.pawns, difficulty, selectHex, aiColor]);
 
   // Trigger AI move when it's AI's turn
   useEffect(() => {
@@ -65,11 +67,11 @@ export function useAIGame(options: UseAIGameOptions) {
 
   // Wrapper for selectHex that prevents moves during AI turn
   const selectHexWrapper = useCallback((hex: { q: number; r: number }) => {
-    if (isAIThinking || (mode === 'vs-ai' && gameState.currentPlayer === 'red')) {
+    if (isAIThinking || (mode === 'vs-ai' && gameState.currentPlayer === aiColor)) {
       return; // Ignore clicks during AI turn
     }
     selectHex(hex);
-  }, [selectHex, isAIThinking, mode, gameState.currentPlayer]);
+  }, [selectHex, isAIThinking, mode, gameState.currentPlayer, aiColor]);
 
   // Reset game and clear AI state
   const resetGame = useCallback(() => {
@@ -87,6 +89,8 @@ export function useAIGame(options: UseAIGameOptions) {
     isAIThinking,
     gameMode: mode,
     aiDifficulty: difficulty,
+    playerColor,
+    aiColor,
     // Disable undo/redo during AI thinking
     canUndo: gameStateHook.canUndo && !isAIThinking,
     canRedo: gameStateHook.canRedo && !isAIThinking

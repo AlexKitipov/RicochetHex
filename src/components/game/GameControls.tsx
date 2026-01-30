@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import type { AIDifficulty } from '@/lib/gameAI';
+import type { PlayerColor } from '@/lib/hexUtils';
 
 type GameMode = 'local' | 'vs-ai';
 
@@ -28,6 +29,8 @@ interface GameControlsProps {
   aiDifficulty: AIDifficulty;
   isAIThinking: boolean;
   onChangeMode: () => void;
+  playerColor: PlayerColor;
+  aiColor: PlayerColor;
 }
 
 export const GameControls: React.FC<GameControlsProps> = ({
@@ -44,7 +47,9 @@ export const GameControls: React.FC<GameControlsProps> = ({
   gameMode,
   aiDifficulty,
   isAIThinking,
-  onChangeMode
+  onChangeMode,
+  playerColor,
+  aiColor
 }) => {
   return (
     <div className="bg-card border border-border rounded-lg p-4 space-y-4">
@@ -59,7 +64,10 @@ export const GameControls: React.FC<GameControlsProps> = ({
           {gameMode === 'vs-ai' ? (
             <>
               <Bot className="h-3 w-3" />
-              Срещу AI ({aiDifficulty === 'easy' ? 'Лесно' : 'Средно'})
+              Срещу AI ({aiDifficulty === 'easy' ? 'Лесно' : aiDifficulty === 'medium' ? 'Средно' : 'Трудно'})
+              <span className="ml-1">
+                • Ти: {playerColor === 'blue' ? '🔵' : '🔴'}
+              </span>
             </>
           ) : (
             <>
@@ -96,7 +104,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
               ) : (
                 <>
                   {currentPlayer === 'blue' ? '🔵 Сините' : '🔴 Червените'}
-                  {gameMode === 'vs-ai' && currentPlayer === 'red' && ' (AI)'}
+                  {gameMode === 'vs-ai' && currentPlayer === aiColor && ' (AI)'}
                 </>
               )}
             </div>
