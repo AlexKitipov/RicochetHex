@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Undo2, Redo2, RotateCcw, Volume2, VolumeX, HelpCircle, Bot, Users, ArrowLeft, Loader2 } from 'lucide-react';
+import { Undo2, Redo2, RotateCcw, Volume2, VolumeX, HelpCircle, Bot, Users, ArrowLeft, Loader2, Pause, Play, Eye } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,13 @@ import {
 import type { AIDifficulty } from '@/lib/gameAI';
 import type { PlayerColor } from '@/lib/hexUtils';
 
-type GameMode = 'local' | 'vs-ai';
+type GameMode = 'local' | 'vs-ai' | 'ai-vs-ai';
+
+const difficultyLabels: Record<AIDifficulty, string> = {
+  easy: 'Лесно',
+  medium: 'Средно',
+  hard: 'Трудно'
+};
 
 interface GameControlsProps {
   currentPlayer: 'blue' | 'red';
@@ -31,6 +37,10 @@ interface GameControlsProps {
   onChangeMode: () => void;
   playerColor: PlayerColor;
   aiColor: PlayerColor;
+  isPaused?: boolean;
+  onTogglePause?: () => void;
+  blueDifficulty?: AIDifficulty;
+  redDifficulty?: AIDifficulty;
 }
 
 export const GameControls: React.FC<GameControlsProps> = ({
@@ -49,7 +59,11 @@ export const GameControls: React.FC<GameControlsProps> = ({
   isAIThinking,
   onChangeMode,
   playerColor,
-  aiColor
+  aiColor,
+  isPaused = false,
+  onTogglePause,
+  blueDifficulty = 'medium',
+  redDifficulty = 'medium'
 }) => {
   return (
     <div className="bg-card border border-border rounded-lg p-4 space-y-4">
@@ -57,14 +71,21 @@ export const GameControls: React.FC<GameControlsProps> = ({
       <div className="flex items-center justify-center gap-2">
         <div className={`
           inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium
-          ${gameMode === 'vs-ai' 
-            ? 'bg-destructive/10 text-destructive' 
-            : 'bg-primary/10 text-primary'}
+          ${gameMode === 'ai-vs-ai' 
+            ? 'bg-chart-5/10 text-chart-5'
+            : gameMode === 'vs-ai' 
+              ? 'bg-destructive/10 text-destructive' 
+              : 'bg-primary/10 text-primary'}
         `}>
-          {gameMode === 'vs-ai' ? (
+          {gameMode === 'ai-vs-ai' ? (
+            <>
+              <Eye className="h-3 w-3" />
+              AI vs AI (🔵{difficultyLabels[blueDifficulty]} vs 🔴{difficultyLabels[redDifficulty]})
+            </>
+          ) : gameMode === 'vs-ai' ? (
             <>
               <Bot className="h-3 w-3" />
-              Срещу AI ({aiDifficulty === 'easy' ? 'Лесно' : aiDifficulty === 'medium' ? 'Средно' : 'Трудно'})
+              Срещу AI ({difficultyLabels[aiDifficulty]})
               <span className="ml-1">
                 • Ти: {playerColor === 'blue' ? '🔵' : '🔴'}
               </span>
@@ -101,10 +122,16 @@ export const GameControls: React.FC<GameControlsProps> = ({
                   <Loader2 className="h-4 w-4 animate-spin" />
                   AI мисли...
                 </>
+              ) : isPaused && gameMode === 'ai-vs-ai' ? (
+                <>
+                  {currentPlayer === 'blue' ? '🔵 Сините' : '🔴 Червените'}
+                  <span className="text-sm font-normal ml-1">(пауза)</span>
+                </>
               ) : (
                 <>
                   {currentPlayer === 'blue' ? '🔵 Сините' : '🔴 Червените'}
                   {gameMode === 'vs-ai' && currentPlayer === aiColor && ' (AI)'}
+                  {gameMode === 'ai-vs-ai' && ' (AI)'}
                 </>
               )}
             </div>
@@ -114,6 +141,28 @@ export const GameControls: React.FC<GameControlsProps> = ({
 
       {/* Control Buttons */}
       <div className="flex flex-wrap justify-center gap-2">
+        {/* Pause/Play button for AI vs AI */}
+        {gameMode === 'ai-vs-ai' && !gameOver && onTogglePause && (
+          <Button
+            variant={isPaused ? "default" : "outline"}
+            size="sm"
+            onClick={onTogglePause}
+            className="gap-1"
+          >
+            {isPaused ? (
+              <>
+                <Play className="h-4 w-4" />
+                <span className="hidden sm:inline">Продължи</span>
+              </>
+            ) : (
+              <>
+                <Pause className="h-4 w-4" />
+                <span className="hidden sm:inline">Пауза</span>
+              </>
+            )}
+          </Button>
+        )}
+        
         <Button
           variant="outline"
           size="sm"
