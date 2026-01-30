@@ -3,23 +3,31 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Users, Bot, Zap, Brain, Sparkles } from 'lucide-react';
+import { Users, Bot, Zap, Brain, Sparkles, Eye } from 'lucide-react';
 import type { AIDifficulty } from '@/lib/gameAI';
 import type { PlayerColor } from '@/lib/hexUtils';
 
-export type GameMode = 'local' | 'vs-ai';
+export type GameMode = 'local' | 'vs-ai' | 'ai-vs-ai';
 
 interface GameModeSelectorProps {
-  onStart: (mode: GameMode, difficulty: AIDifficulty, playerColor: PlayerColor) => void;
+  onStart: (
+    mode: GameMode, 
+    difficulty: AIDifficulty, 
+    playerColor: PlayerColor,
+    blueDifficulty?: AIDifficulty,
+    redDifficulty?: AIDifficulty
+  ) => void;
 }
 
 export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) => {
   const [selectedMode, setSelectedMode] = useState<GameMode>('local');
   const [difficulty, setDifficulty] = useState<AIDifficulty>('medium');
   const [playerColor, setPlayerColor] = useState<PlayerColor>('blue');
+  const [blueDifficulty, setBlueDifficulty] = useState<AIDifficulty>('medium');
+  const [redDifficulty, setRedDifficulty] = useState<AIDifficulty>('medium');
 
   const handleStart = () => {
-    onStart(selectedMode, difficulty, playerColor);
+    onStart(selectedMode, difficulty, playerColor, blueDifficulty, redDifficulty);
   };
 
   return (
@@ -38,7 +46,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
           <RadioGroup
             value={selectedMode}
             onValueChange={(value) => setSelectedMode(value as GameMode)}
-            className="grid grid-cols-2 gap-4"
+            className="grid grid-cols-3 gap-3"
           >
             {/* Local Multiplayer */}
             <div>
@@ -49,11 +57,11 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
               />
               <Label
                 htmlFor="local"
-                className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+                className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
               >
-                <Users className="mb-3 h-8 w-8 text-primary" />
-                <span className="text-lg font-medium">Локален</span>
-                <span className="text-xs text-muted-foreground">Мултиплейър</span>
+                <Users className="mb-2 h-6 w-6 text-primary" />
+                <span className="text-sm font-medium">Локален</span>
+                <span className="text-xs text-muted-foreground">2 играчи</span>
               </Label>
             </div>
 
@@ -66,16 +74,33 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
               />
               <Label
                 htmlFor="vs-ai"
-                className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+                className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
               >
-                <Bot className="mb-3 h-8 w-8 text-destructive" />
-                <span className="text-lg font-medium">Срещу AI</span>
-                <span className="text-xs text-muted-foreground">Компютърен противник</span>
+                <Bot className="mb-2 h-6 w-6 text-destructive" />
+                <span className="text-sm font-medium">Срещу AI</span>
+                <span className="text-xs text-muted-foreground">1 играч</span>
+              </Label>
+            </div>
+
+            {/* AI vs AI */}
+            <div>
+              <RadioGroupItem
+                value="ai-vs-ai"
+                id="ai-vs-ai"
+                className="peer sr-only"
+              />
+              <Label
+                htmlFor="ai-vs-ai"
+                className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+              >
+                <Eye className="mb-2 h-6 w-6 text-chart-5" />
+                <span className="text-sm font-medium">AI vs AI</span>
+                <span className="text-xs text-muted-foreground">Наблюдение</span>
               </Label>
             </div>
           </RadioGroup>
 
-          {/* AI Options (only shown when AI mode is selected) */}
+          {/* VS AI Options */}
           {selectedMode === 'vs-ai' && (
             <div className="space-y-5 animate-fade-in">
               {/* Difficulty Selection */}
@@ -182,6 +207,68 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
             </div>
           )}
 
+          {/* AI vs AI Options */}
+          {selectedMode === 'ai-vs-ai' && (
+            <div className="space-y-4 animate-fade-in">
+              <div className="grid grid-cols-2 gap-4">
+                {/* Blue AI Difficulty */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium flex items-center gap-1">
+                    🔵 Сини AI:
+                  </Label>
+                  <RadioGroup
+                    value={blueDifficulty}
+                    onValueChange={(value) => setBlueDifficulty(value as AIDifficulty)}
+                    className="space-y-1"
+                  >
+                    {[
+                      { value: 'easy' as AIDifficulty, label: 'Лесно', icon: Zap },
+                      { value: 'medium' as AIDifficulty, label: 'Средно', icon: Brain },
+                      { value: 'hard' as AIDifficulty, label: 'Трудно', icon: Sparkles }
+                    ].map(({ value, label, icon: Icon }) => (
+                      <div key={value} className="flex items-center space-x-2">
+                        <RadioGroupItem value={value} id={`blue-${value}`} />
+                        <Label htmlFor={`blue-${value}`} className="flex items-center gap-1 cursor-pointer">
+                          <Icon className="h-3 w-3" />
+                          {label}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+
+                {/* Red AI Difficulty */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium flex items-center gap-1">
+                    🔴 Червени AI:
+                  </Label>
+                  <RadioGroup
+                    value={redDifficulty}
+                    onValueChange={(value) => setRedDifficulty(value as AIDifficulty)}
+                    className="space-y-1"
+                  >
+                    {[
+                      { value: 'easy' as AIDifficulty, label: 'Лесно', icon: Zap },
+                      { value: 'medium' as AIDifficulty, label: 'Средно', icon: Brain },
+                      { value: 'hard' as AIDifficulty, label: 'Трудно', icon: Sparkles }
+                    ].map(({ value, label, icon: Icon }) => (
+                      <div key={value} className="flex items-center space-x-2">
+                        <RadioGroupItem value={value} id={`red-${value}`} />
+                        <Label htmlFor={`red-${value}`} className="flex items-center gap-1 cursor-pointer">
+                          <Icon className="h-3 w-3" />
+                          {label}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                👀 Наблюдавай как две AI се състезават!
+              </p>
+            </div>
+          )}
+
           {/* Start Button */}
           <Button 
             onClick={handleStart} 
@@ -200,6 +287,9 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                   ? '🤖 AI играе с червените' 
                   : '🤖 AI играе със сините (първи ход)'}
               </p>
+            )}
+            {selectedMode === 'ai-vs-ai' && (
+              <p>🤖 И двата отбора се контролират от AI</p>
             )}
           </div>
         </CardContent>

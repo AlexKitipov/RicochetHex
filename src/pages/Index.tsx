@@ -14,6 +14,8 @@ const Index = () => {
   const [gameMode, setGameMode] = useState<GameMode>('local');
   const [aiDifficulty, setAIDifficulty] = useState<AIDifficulty>('easy');
   const [playerColor, setPlayerColor] = useState<PlayerColor>('blue');
+  const [blueDifficulty, setBlueDifficulty] = useState<AIDifficulty>('medium');
+  const [redDifficulty, setRedDifficulty] = useState<AIDifficulty>('medium');
   
   const { 
     gameState, 
@@ -24,16 +26,32 @@ const Index = () => {
     canUndo, 
     canRedo,
     isAIThinking,
-    aiColor
-  } = useAIGame({ mode: gameMode, difficulty: aiDifficulty, playerColor });
+    aiColor,
+    isPaused,
+    togglePause
+  } = useAIGame({ 
+    mode: gameMode, 
+    difficulty: aiDifficulty, 
+    playerColor,
+    blueDifficulty,
+    redDifficulty
+  });
   
   const { soundEnabled, toggleSound } = useSoundEffects();
   const isMobile = useIsMobile();
   
-  const handleStartGame = (mode: GameMode, difficulty: AIDifficulty, color: PlayerColor) => {
+  const handleStartGame = (
+    mode: GameMode, 
+    difficulty: AIDifficulty, 
+    color: PlayerColor,
+    blueAIDiff?: AIDifficulty,
+    redAIDiff?: AIDifficulty
+  ) => {
     setGameMode(mode);
     setAIDifficulty(difficulty);
     setPlayerColor(color);
+    if (blueAIDiff) setBlueDifficulty(blueAIDiff);
+    if (redAIDiff) setRedDifficulty(redAIDiff);
     setGameStarted(true);
   };
   
@@ -92,6 +110,10 @@ const Index = () => {
               onChangeMode={handleChangeMode}
               playerColor={playerColor}
               aiColor={aiColor}
+              isPaused={isPaused}
+              onTogglePause={togglePause}
+              blueDifficulty={blueDifficulty}
+              redDifficulty={redDifficulty}
             />
             
             <div className="flex justify-center overflow-auto py-4">
