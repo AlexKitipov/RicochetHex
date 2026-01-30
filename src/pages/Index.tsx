@@ -6,12 +6,14 @@ import { GameModeSelector, GameMode } from '@/components/game/GameModeSelector';
 import { useAIGame } from '@/hooks/useAIGame';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useIsMobile } from '@/hooks/use-mobile';
+import type { PlayerColor } from '@/lib/hexUtils';
 import type { AIDifficulty } from '@/lib/gameAI';
 
 const Index = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [gameMode, setGameMode] = useState<GameMode>('local');
   const [aiDifficulty, setAIDifficulty] = useState<AIDifficulty>('easy');
+  const [playerColor, setPlayerColor] = useState<PlayerColor>('blue');
   
   const { 
     gameState, 
@@ -21,15 +23,17 @@ const Index = () => {
     resetGame: baseResetGame, 
     canUndo, 
     canRedo,
-    isAIThinking
-  } = useAIGame({ mode: gameMode, difficulty: aiDifficulty });
+    isAIThinking,
+    aiColor
+  } = useAIGame({ mode: gameMode, difficulty: aiDifficulty, playerColor });
   
   const { soundEnabled, toggleSound } = useSoundEffects();
   const isMobile = useIsMobile();
   
-  const handleStartGame = (mode: GameMode, difficulty: AIDifficulty) => {
+  const handleStartGame = (mode: GameMode, difficulty: AIDifficulty, color: PlayerColor) => {
     setGameMode(mode);
     setAIDifficulty(difficulty);
+    setPlayerColor(color);
     setGameStarted(true);
   };
   
@@ -86,6 +90,8 @@ const Index = () => {
               aiDifficulty={aiDifficulty}
               isAIThinking={isAIThinking}
               onChangeMode={handleChangeMode}
+              playerColor={playerColor}
+              aiColor={aiColor}
             />
             
             <div className="flex justify-center overflow-auto py-4">
