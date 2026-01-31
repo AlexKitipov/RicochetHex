@@ -70,53 +70,55 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground text-center">
+      <header className="border-b border-border bg-card shrink-0">
+        <div className="container mx-auto px-4 py-2 md:py-3">
+          <h1 className="text-xl md:text-2xl font-bold text-foreground text-center">
             ♟️ RicochetHex
           </h1>
-          <p className="text-sm text-muted-foreground text-center mt-1">
+          <p className="text-xs text-muted-foreground text-center">
             Шестоъгълен стратегически шах с рикошет
           </p>
         </div>
       </header>
 
       {/* Main Game Area */}
-      <main className="container mx-auto px-4 py-6">
+      <main className="flex-1 min-h-0 container mx-auto px-2 md:px-4 py-2 md:py-4">
         <div className={`
-          grid gap-6
+          h-full gap-3 md:gap-4
           ${isMobile 
-            ? 'grid-cols-1' 
-            : 'grid-cols-[1fr_280px] lg:grid-cols-[1fr_320px]'}
+            ? 'flex flex-col' 
+            : 'grid grid-cols-[1fr_240px] lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_320px]'}
         `}>
           {/* Game Board Section */}
-          <div className="space-y-4">
-            <GameControls
-              currentPlayer={gameState.currentPlayer}
-              gameOver={gameState.gameOver}
-              winner={gameState.winner}
-              canUndo={canUndo}
-              canRedo={canRedo}
-              soundEnabled={soundEnabled}
-              onUndo={undo}
-              onRedo={redo}
-              onReset={resetGame}
-              onToggleSound={toggleSound}
-              gameMode={gameMode}
-              aiDifficulty={aiDifficulty}
-              isAIThinking={isAIThinking}
-              onChangeMode={handleChangeMode}
-              playerColor={playerColor}
-              aiColor={aiColor}
-              isPaused={isPaused}
-              onTogglePause={togglePause}
-              blueDifficulty={blueDifficulty}
-              redDifficulty={redDifficulty}
-            />
+          <div className={`flex flex-col gap-2 ${isMobile ? 'flex-1 min-h-0' : 'min-h-0'}`}>
+            <div className="shrink-0">
+              <GameControls
+                currentPlayer={gameState.currentPlayer}
+                gameOver={gameState.gameOver}
+                winner={gameState.winner}
+                canUndo={canUndo}
+                canRedo={canRedo}
+                soundEnabled={soundEnabled}
+                onUndo={undo}
+                onRedo={redo}
+                onReset={resetGame}
+                onToggleSound={toggleSound}
+                gameMode={gameMode}
+                aiDifficulty={aiDifficulty}
+                isAIThinking={isAIThinking}
+                onChangeMode={handleChangeMode}
+                playerColor={playerColor}
+                aiColor={aiColor}
+                isPaused={isPaused}
+                onTogglePause={togglePause}
+                blueDifficulty={blueDifficulty}
+                redDifficulty={redDifficulty}
+              />
+            </div>
             
-            <div className="flex justify-center overflow-auto py-4">
+            <div className="flex-1 min-h-0 flex items-center justify-center">
               <HexBoard
                 pawns={gameState.pawns}
                 selectedHex={gameState.selectedHex}
@@ -128,7 +130,7 @@ const Index = () => {
           </div>
 
           {/* Move History Section */}
-          <div className={isMobile ? 'order-first' : ''}>
+          <div className={`${isMobile ? 'h-32 shrink-0' : 'min-h-0 overflow-hidden'}`}>
             <MoveHistory
               moves={gameState.moveHistory}
               currentIndex={gameState.historyIndex}
@@ -138,9 +140,9 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card mt-auto">
-        <div className="container mx-auto px-4 py-3 text-center text-xs text-muted-foreground">
-          Локален мултиплейър режим • Ctrl+Z/Y за Undo/Redo
+      <footer className="border-t border-border bg-card shrink-0">
+        <div className="container mx-auto px-4 py-2 text-center text-xs text-muted-foreground">
+          Ctrl+Z/Y за Undo/Redo
         </div>
       </footer>
     </div>

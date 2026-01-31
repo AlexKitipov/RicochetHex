@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useRef, useEffect, useState } from 'react';
 import { HexCoord, Pawn, hexKey, axialToPixel, getHexCorners, generateHexGrid, getHexColor, SIDE_LENGTH } from '@/lib/hexUtils';
 import { HexCell } from './HexCell';
 import { GamePawn } from './GamePawn';
@@ -11,8 +11,8 @@ interface HexBoardProps {
   onHexClick: (hex: HexCoord) => void;
 }
 
-const HEX_SIZE = 28;
-const BOARD_PADDING = 60;
+const BASE_HEX_SIZE = 28;
+const BOARD_PADDING = 40;
 
 export const HexBoard: React.FC<HexBoardProps> = ({
   pawns,
@@ -21,19 +21,65 @@ export const HexBoard: React.FC<HexBoardProps> = ({
   ricochetPath,
   onHexClick
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [hexSize, setHexSize] = useState(BASE_HEX_SIZE);
   const hexGrid = useMemo(() => generateHexGrid(SIDE_LENGTH), []);
 
-  // Calculate board dimensions
+  // Calculate base board dimensions (used to determine scale)
+  const baseDimensions = useMemo(() => {
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+
+    hexGrid.forEach(coord => {
+      const pixel = axialToPixel(coord.q, coord.r, BASE_HEX_SIZE);
+      minX = Math.min(minX, pixel.x - BASE_HEX_SIZE);
+      maxX = Math.max(maxX, pixel.x + BASE_HEX_SIZE);
+      minY = Math.min(minY, pixel.y - BASE_HEX_SIZE);
+      maxY = Math.max(maxY, pixel.y + BASE_HEX_SIZE);
+    });
+
+    return {
+      width: maxX - minX + BOARD_PADDING * 2,
+      height: maxY - minY + BOARD_PADDING * 2
+    };
+  }, [hexGrid]);
+
+  // Resize observer to adapt hex size to container
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateSize = () => {
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      
+      // Calculate scale factor based on available space
+      const scaleX = containerWidth / baseDimensions.width;
+      const scaleY = containerHeight / baseDimensions.height;
+      const scale = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x to prevent too large
+      
+      const newHexSize = Math.max(16, Math.floor(BASE_HEX_SIZE * scale)); // Min size 16
+      setHexSize(newHexSize);
+    };
+
+    const resizeObserver = new ResizeObserver(updateSize);
+    resizeObserver.observe(container);
+    updateSize();
+
+    return () => resizeObserver.disconnect();
+  }, [baseDimensions]);
+
+  // Calculate board dimensions based on current hex size
   const { boardWidth, boardHeight, offsetX, offsetY } = useMemo(() => {
     let minX = Infinity, maxX = -Infinity;
     let minY = Infinity, maxY = -Infinity;
 
     hexGrid.forEach(coord => {
-      const pixel = axialToPixel(coord.q, coord.r, HEX_SIZE);
-      minX = Math.min(minX, pixel.x - HEX_SIZE);
-      maxX = Math.max(maxX, pixel.x + HEX_SIZE);
-      minY = Math.min(minY, pixel.y - HEX_SIZE);
-      maxY = Math.max(maxY, pixel.y + HEX_SIZE);
+      const pixel = axialToPixel(coord.q, coord.r, hexSize);
+      minX = Math.min(minX, pixel.x - hexSize);
+      maxX = Math.max(maxX, pixel.x + hexSize);
+      minY = Math.min(minY, pixel.y - hexSize);
+      maxY = Math.max(maxY, pixel.y + hexSize);
     });
 
     return {
@@ -42,7 +88,7 @@ export const HexBoard: React.FC<HexBoardProps> = ({
       offsetX: -minX + BOARD_PADDING,
       offsetY: -minY + BOARD_PADDING
     };
-  }, [hexGrid]);
+  }, [hexGrid, hexSize]);
 
   const isSelected = useCallback((coord: HexCoord) => {
     return selectedHex?.q === coord.q && selectedHex?.r === coord.r;
@@ -57,12 +103,14 @@ export const HexBoard: React.FC<HexBoardProps> = ({
   }, [ricochetPath]);
 
   return (
-    <div className="relative flex items-center justify-center">
+    <div 
+      ref={containerRef}
+      className="relative flex items-center justify-center w-full h-full min-h-[300px]"
+    >
       <svg 
         width={boardWidth} 
         height={boardHeight}
         className="drop-shadow-2xl"
-        style={{ maxWidth: '100%', height: 'auto' }}
       >
         {/* Wood texture background */}
         <defs>
@@ -119,7 +167,7 @@ export const HexBoard: React.FC<HexBoardProps> = ({
 
         {/* Hex cells */}
         {hexGrid.map(coord => {
-          const pixel = axialToPixel(coord.q, coord.r, HEX_SIZE);
+          const pixel = axialToPixel(coord.q, coord.r, hexSize);
           const centerX = pixel.x + offsetX;
           const centerY = pixel.y + offsetY;
           
@@ -129,7 +177,7 @@ export const HexBoard: React.FC<HexBoardProps> = ({
               coord={coord}
               centerX={centerX}
               centerY={centerY}
-              size={HEX_SIZE}
+              size={hexSize}
               hexColor={getHexColor(coord.q, coord.r)}
               isSelected={isSelected(coord)}
               isPossibleMove={isPossibleMove(coord)}
@@ -145,7 +193,7 @@ export const HexBoard: React.FC<HexBoardProps> = ({
             q: parseInt(key.split(',')[0]), 
             r: parseInt(key.split(',')[1]) 
           };
-          const pixel = axialToPixel(coord.q, coord.r, HEX_SIZE);
+          const pixel = axialToPixel(coord.q, coord.r, hexSize);
           const centerX = pixel.x + offsetX;
           const centerY = pixel.y + offsetY;
           
@@ -154,7 +202,7 @@ export const HexBoard: React.FC<HexBoardProps> = ({
               key={key}
               centerX={centerX}
               centerY={centerY}
-              size={HEX_SIZE}
+              size={hexSize}
               color={pawn.color}
               number={pawn.number}
               isNeutralized={pawn.state === 'neutralized'}
