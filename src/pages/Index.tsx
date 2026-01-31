@@ -84,15 +84,15 @@ const Index = () => {
       </header>
 
       {/* Main Game Area */}
-      <main className="flex-1 min-h-0 container mx-auto px-2 md:px-4 py-2 md:py-4">
+      <main className="flex-1 min-h-0 container mx-auto px-2 md:px-4 py-2 md:py-4 overflow-hidden">
         <div className={`
           h-full gap-3 md:gap-4
           ${isMobile 
             ? 'flex flex-col' 
-            : 'grid grid-cols-[1fr_240px] lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_320px]'}
+            : 'grid grid-cols-[minmax(0,1fr)_240px] lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]'}
         `}>
           {/* Game Board Section */}
-          <div className={`flex flex-col gap-2 ${isMobile ? 'flex-1 min-h-0' : 'min-h-0'}`}>
+          <div className={`flex flex-col gap-2 overflow-hidden ${isMobile ? 'flex-1 min-h-0' : 'min-h-0'}`}>
             <div className="shrink-0">
               <GameControls
                 currentPlayer={gameState.currentPlayer}
@@ -118,7 +118,7 @@ const Index = () => {
               />
             </div>
             
-            <div className="flex-1 min-h-0 flex items-center justify-center">
+            <div className="flex-1 min-h-0 overflow-hidden flex items-center justify-center">
               <HexBoard
                 pawns={gameState.pawns}
                 selectedHex={gameState.selectedHex}

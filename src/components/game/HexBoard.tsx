@@ -105,7 +105,7 @@ export const HexBoard: React.FC<HexBoardProps> = ({
   return (
     <div 
       ref={containerRef}
-      className="relative flex items-center justify-center w-full h-full min-h-[300px]"
+      className="relative flex items-center justify-center w-full h-full min-h-[200px] max-w-full max-h-full overflow-hidden"
     >
       <svg 
         width={boardWidth} 
