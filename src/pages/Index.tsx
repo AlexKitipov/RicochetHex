@@ -73,18 +73,18 @@ const Index = () => {
     <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <header className="border-b border-border bg-card shrink-0">
-        <div className="container mx-auto px-4 py-2 md:py-3">
-          <h1 className="text-xl md:text-2xl font-bold text-foreground text-center">
+        <div className="container mx-auto px-4 py-1.5 md:py-2">
+          <h1 className="text-lg md:text-xl font-bold text-foreground text-center">
             ♟️ RicochetHex
           </h1>
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-[11px] leading-snug text-muted-foreground text-center">
             Шестоъгълен стратегически шах с рикошет
           </p>
         </div>
       </header>
 
       {/* Main Game Area */}
-      <main className="flex-1 min-h-0 container mx-auto px-2 md:px-4 py-2 md:py-4 overflow-hidden">
+      <main className="flex-1 min-h-0 container mx-auto px-2 md:px-4 py-2 md:py-3 overflow-hidden">
         <div className={`
           h-full gap-3 md:gap-4
           ${isMobile 
@@ -141,7 +141,7 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="border-t border-border bg-card shrink-0">
-        <div className="container mx-auto px-4 py-2 text-center text-xs text-muted-foreground">
+        <div className="container mx-auto px-4 py-1.5 text-center text-[11px] text-muted-foreground">
           Ctrl+Z/Y за Undo/Redo
         </div>
       </footer>
