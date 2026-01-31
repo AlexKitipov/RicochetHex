@@ -71,15 +71,12 @@ const Index = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
-      {/* Header */}
+      {/* Compact Header */}
       <header className="border-b border-border bg-card shrink-0">
-        <div className="container mx-auto px-4 py-1.5 md:py-2">
-          <h1 className="text-lg md:text-xl font-bold text-foreground text-center">
-            ♟️ RicochetHex
+        <div className="container mx-auto px-4 py-1">
+          <h1 className="text-sm md:text-base font-bold text-foreground text-center">
+            ♟️ RicochetHex <span className="font-normal text-muted-foreground text-xs hidden sm:inline">— Шестоъгълен стратегически шах</span>
           </h1>
-          <p className="text-[11px] leading-snug text-muted-foreground text-center">
-            Шестоъгълен стратегически шах с рикошет
-          </p>
         </div>
       </header>
 
@@ -139,10 +136,10 @@ const Index = () => {
         </div>
       </main>
 
-      {/* Footer */}
+      {/* Compact Footer */}
       <footer className="border-t border-border bg-card shrink-0">
-        <div className="container mx-auto px-4 py-1.5 text-center text-[11px] text-muted-foreground">
-          Ctrl+Z/Y за Undo/Redo
+        <div className="container mx-auto px-3 py-0.5 text-center text-[10px] text-muted-foreground">
+          Ctrl+Z/Y: Undo/Redo
         </div>
       </footer>
     </div>
