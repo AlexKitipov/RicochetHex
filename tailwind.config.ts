@@ -63,28 +63,53 @@ export default {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
-  		keyframes: {
-  			'accordion-down': {
-  				from: {
-  					height: '0'
-  				},
-  				to: {
-  					height: 'var(--radix-accordion-content-height)'
-  				}
-  			},
-  			'accordion-up': {
-  				from: {
-  					height: 'var(--radix-accordion-content-height)'
-  				},
-  				to: {
-  					height: '0'
-  				}
-  			}
-  		},
-  		animation: {
-  			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
-  		},
+		keyframes: {
+			'accordion-down': {
+				from: {
+					height: '0'
+				},
+				to: {
+					height: 'var(--radix-accordion-content-height)'
+				}
+			},
+			'accordion-up': {
+				from: {
+					height: 'var(--radix-accordion-content-height)'
+				},
+				to: {
+					height: '0'
+				}
+			},
+			'ping': {
+				'0%': {
+					transform: 'scale(1)',
+					opacity: '0.8'
+				},
+				'100%': {
+					transform: 'scale(1.5)',
+					opacity: '0'
+				}
+			},
+			'bounce-in': {
+				'0%': {
+					transform: 'scale(0.8)',
+					opacity: '0'
+				},
+				'50%': {
+					transform: 'scale(1.1)'
+				},
+				'100%': {
+					transform: 'scale(1)',
+					opacity: '1'
+				}
+			}
+		},
+		animation: {
+			'accordion-down': 'accordion-down 0.2s ease-out',
+			'accordion-up': 'accordion-up 0.2s ease-out',
+			'ping': 'ping 0.5s cubic-bezier(0, 0, 0.2, 1)',
+			'bounce-in': 'bounce-in 0.3s ease-out'
+		},
   		boxShadow: {
   			'2xs': 'var(--shadow-2xs)',
   			xs: 'var(--shadow-xs)',
