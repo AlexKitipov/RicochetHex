@@ -187,7 +187,7 @@ export const HexBoard: React.FC<HexBoardProps> = ({
           );
         })}
 
-        {/* Pawns */}
+        {/* Pawns - use pawn id as key for animation tracking */}
         {Array.from(pawns.entries()).map(([key, pawn]) => {
           const coord = { 
             q: parseInt(key.split(',')[0]), 
@@ -197,9 +197,12 @@ export const HexBoard: React.FC<HexBoardProps> = ({
           const centerX = pixel.x + offsetX;
           const centerY = pixel.y + offsetY;
           
+          // Use color+number as stable key so animation tracks across positions
+          const pawnId = `${pawn.color}-${pawn.number}`;
+          
           return (
             <GamePawn
-              key={key}
+              key={pawnId}
               centerX={centerX}
               centerY={centerY}
               size={hexSize}
