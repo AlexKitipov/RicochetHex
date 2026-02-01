@@ -53,12 +53,12 @@ export const HexBoard: React.FC<HexBoardProps> = ({
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
       
-      // Calculate scale factor based on available space
+      // Calculate scale factor based on available space - no caps for full responsiveness
       const scaleX = containerWidth / baseDimensions.width;
       const scaleY = containerHeight / baseDimensions.height;
-      const scale = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x to prevent too large
+      const scale = Math.min(scaleX, scaleY);
       
-      const newHexSize = Math.max(16, Math.floor(BASE_HEX_SIZE * scale)); // Min size 16
+      const newHexSize = BASE_HEX_SIZE * scale;
       setHexSize(newHexSize);
     };
 

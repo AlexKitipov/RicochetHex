@@ -83,10 +83,10 @@ const Index = () => {
       {/* Main Game Area */}
       <main className="flex-1 min-h-0 container mx-auto px-2 md:px-4 py-2 md:py-3 overflow-hidden">
         <div className={`
-          h-full gap-3 md:gap-4
+          h-full gap-2 md:gap-3
           ${isMobile 
             ? 'flex flex-col' 
-            : 'grid grid-cols-[minmax(0,1fr)_240px] lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]'}
+            : 'grid grid-cols-[minmax(0,1fr)_minmax(180px,22vw)]'}
         `}>
           {/* Game Board Section */}
           <div className={`flex flex-col gap-2 overflow-hidden ${isMobile ? 'flex-1 min-h-0' : 'min-h-0'}`}>
