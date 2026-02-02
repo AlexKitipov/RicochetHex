@@ -28,7 +28,10 @@ const Index = () => {
     isAIThinking,
     aiColor,
     isPaused,
-    togglePause
+    togglePause,
+    saveGame,
+    loadGame,
+    hasSavedGame
   } = useAIGame({ 
     mode: gameMode, 
     difficulty: aiDifficulty, 
@@ -112,6 +115,9 @@ const Index = () => {
                 onTogglePause={togglePause}
                 blueDifficulty={blueDifficulty}
                 redDifficulty={redDifficulty}
+                onSave={saveGame}
+                onLoad={loadGame}
+                hasSavedGame={hasSavedGame()}
               />
             </div>
             
