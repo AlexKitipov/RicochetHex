@@ -1,15 +1,19 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Undo2, Redo2, RotateCcw, Volume2, VolumeX, HelpCircle, Bot, Users, ArrowLeft, Loader2, Pause, Play, Eye } from 'lucide-react';
+import { Undo2, Redo2, RotateCcw, Volume2, VolumeX, HelpCircle, Bot, Users, ArrowLeft, Loader2, Pause, Play, Eye, Save, FolderOpen } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 import type { AIDifficulty } from '@/lib/gameAI';
 import type { PlayerColor } from '@/lib/hexUtils';
+
 type GameMode = 'local' | 'vs-ai' | 'ai-vs-ai';
+
 const difficultyLabels: Record<AIDifficulty, string> = {
   easy: 'Лесно',
   medium: 'Средно',
   hard: 'Трудно'
 };
+
 interface GameControlsProps {
   currentPlayer: 'blue' | 'red';
   gameOver: boolean;
@@ -31,6 +35,9 @@ interface GameControlsProps {
   onTogglePause?: () => void;
   blueDifficulty?: AIDifficulty;
   redDifficulty?: AIDifficulty;
+  onSave?: () => boolean;
+  onLoad?: () => void;
+  hasSavedGame?: boolean;
 }
 export const GameControls: React.FC<GameControlsProps> = ({
   currentPlayer,
@@ -52,8 +59,28 @@ export const GameControls: React.FC<GameControlsProps> = ({
   isPaused = false,
   onTogglePause,
   blueDifficulty = 'medium',
-  redDifficulty = 'medium'
+  redDifficulty = 'medium',
+  onSave,
+  onLoad,
+  hasSavedGame = false
 }) => {
+  const handleSave = () => {
+    if (onSave) {
+      const success = onSave();
+      if (success) {
+        toast.success('Играта е запазена!');
+      } else {
+        toast.error('Грешка при запазване');
+      }
+    }
+  };
+
+  const handleLoad = () => {
+    if (onLoad) {
+      onLoad();
+      toast.success('Играта е заредена!');
+    }
+  };
   return <div className="bg-card border border-border rounded-lg p-4 space-y-4 py-[8px]">
       {/* Game Mode Badge */}
       <div className="flex items-center justify-center gap-2">
@@ -132,6 +159,21 @@ export const GameControls: React.FC<GameControlsProps> = ({
           <RotateCcw className="h-4 w-4" />
           <span className="hidden sm:inline">Нова игра</span>
         </Button>
+
+        {/* Save/Load buttons */}
+        {onSave && (
+          <Button variant="outline" size="sm" onClick={handleSave} disabled={isAIThinking} className="gap-1">
+            <Save className="h-4 w-4" />
+            <span className="hidden sm:inline">Запази</span>
+          </Button>
+        )}
+        
+        {onLoad && hasSavedGame && (
+          <Button variant="outline" size="sm" onClick={handleLoad} disabled={isAIThinking} className="gap-1">
+            <FolderOpen className="h-4 w-4" />
+            <span className="hidden sm:inline">Зареди</span>
+          </Button>
+        )}
         
         <Button variant="outline" size="sm" onClick={onToggleSound} className="gap-1">
           {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}

@@ -33,6 +33,33 @@ export function useGameState() {
   // Store snapshots for undo/redo (captures require full state restoration)
   const [pawnSnapshots, setPawnSnapshots] = useState<Map<string, Pawn>[]>([createInitialPawns()]);
 
+  // Expose pawnSnapshots for save/load functionality
+  const getPawnSnapshots = useCallback(() => pawnSnapshots, [pawnSnapshots]);
+
+  // Load game state from saved data
+  const loadGameState = useCallback((
+    pawns: Map<string, Pawn>,
+    currentPlayer: 'blue' | 'red',
+    moveHistory: Move[],
+    historyIndex: number,
+    gameOver: boolean,
+    winner: 'blue' | 'red' | null,
+    snapshots: Map<string, Pawn>[]
+  ) => {
+    setGameState({
+      pawns,
+      currentPlayer,
+      selectedHex: null,
+      possibleMoves: [],
+      ricochetPath: [],
+      moveHistory,
+      historyIndex,
+      gameOver,
+      winner
+    });
+    setPawnSnapshots(snapshots);
+  }, []);
+
   const executeMove = useCallback((from: HexCoord, to: HexCoord) => {
     setGameState(prev => {
       const newPawns = new Map(prev.pawns);
@@ -281,6 +308,8 @@ export function useGameState() {
     redo,
     resetGame,
     canUndo: gameState.historyIndex >= 0 && !gameState.gameOver,
-    canRedo: gameState.historyIndex < gameState.moveHistory.length - 1
+    canRedo: gameState.historyIndex < gameState.moveHistory.length - 1,
+    getPawnSnapshots,
+    loadGameState
   };
 }
