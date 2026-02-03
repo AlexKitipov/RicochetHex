@@ -17,7 +17,7 @@ interface UseAIGameOptions {
 export function useAIGame(options: UseAIGameOptions) {
   const { mode, difficulty, playerColor, blueDifficulty = 'medium', redDifficulty = 'medium' } = options;
   const gameStateHook = useGameState();
-  const { gameState, selectHex, resetGame: baseResetGame, getPawnSnapshots, loadGameState } = gameStateHook;
+  const { gameState, selectHex, executeMoveDirect, resetGame: baseResetGame, getPawnSnapshots, loadGameState } = gameStateHook;
   const { saveGame: saveToStorage, loadGame: loadFromStorage, hasSavedGame, deleteSavedGame } = useGameSaveLoad();
   
   const [isAIThinking, setIsAIThinking] = useState(false);
@@ -41,7 +41,7 @@ export function useAIGame(options: UseAIGameOptions) {
     return difficulty;
   }, [mode, gameState.currentPlayer, blueDifficulty, redDifficulty, difficulty]);
 
-  // Execute AI move
+  // Execute AI move using direct execution
   const executeAIMove = useCallback(() => {
     if (!isAITurn || isAIThinking || isPaused) return;
     
@@ -57,19 +57,12 @@ export function useAIGame(options: UseAIGameOptions) {
       const move = getAIMove(gameState.pawns, currentColor, currentDifficulty);
       
       if (move) {
-        // First select the pawn
-        selectHex(move.from);
-        
-        // Then execute the move after a brief delay
-        setTimeout(() => {
-          selectHex(move.to);
-          setIsAIThinking(false);
-        }, 100);
-      } else {
-        setIsAIThinking(false);
+        // Use direct execution - no timing issues
+        executeMoveDirect(move.from, move.to);
       }
+      setIsAIThinking(false);
     }, thinkingTime);
-  }, [isAITurn, isAIThinking, isPaused, gameState.pawns, gameState.currentPlayer, selectHex, aiColor, mode, getCurrentAIDifficulty]);
+  }, [isAITurn, isAIThinking, isPaused, gameState.pawns, gameState.currentPlayer, executeMoveDirect, aiColor, mode, getCurrentAIDifficulty]);
 
   // Trigger AI move when it's AI's turn
   useEffect(() => {
