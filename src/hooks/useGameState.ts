@@ -163,56 +163,155 @@ export function useGameState() {
     });
   }, [playSound]);
 
-  const selectHex = useCallback((hex: HexCoord) => {
-    if (gameState.gameOver) return;
-
-    const pawn = gameState.pawns.get(hexKey(hex));
-    
-    // If clicking on own active pawn, select it
-    if (pawn && pawn.color === gameState.currentPlayer && pawn.state === 'active') {
-      playSound('select');
-      const { moves, ricochetPath } = getPossibleMoves(hex, gameState.pawns);
-      setGameState(prev => ({
-        ...prev,
-        selectedHex: hex,
-        possibleMoves: moves,
-        ricochetPath
-      }));
-      return;
-    }
-
-    // If a pawn is already selected
-    if (gameState.selectedHex) {
-      // If clicking on the same hex, deselect
-      if (hex.q === gameState.selectedHex.q && hex.r === gameState.selectedHex.r) {
-        setGameState(prev => ({
-          ...prev,
-          selectedHex: null,
-          possibleMoves: [],
-          ricochetPath: []
-        }));
-        return;
-      }
-
-      // If clicking on a valid move, execute it
-      const isValidMove = gameState.possibleMoves.some(
-        m => m.q === hex.q && m.r === hex.r
-      );
+  // Direct move execution for AI - bypasses selection logic
+  const executeMoveDirect = useCallback((from: HexCoord, to: HexCoord) => {
+    setGameState(prev => {
+      if (prev.gameOver) return prev;
       
-      if (isValidMove) {
-        executeMove(gameState.selectedHex, hex);
-        return;
+      const pawn = prev.pawns.get(hexKey(from));
+      if (!pawn || pawn.color !== prev.currentPlayer || pawn.state !== 'active') {
+        return prev;
       }
-    }
+      
+      // Verify move is valid
+      const { moves } = getPossibleMoves(from, prev.pawns);
+      const isValidMove = moves.some(m => m.q === to.q && m.r === to.r);
+      if (!isValidMove) return prev;
+      
+      // Execute the move - this duplicates executeMove logic but within functional update
+      const newPawns = new Map(prev.pawns);
+      newPawns.delete(hexKey(from));
+      newPawns.set(hexKey(to), pawn);
 
-    // Deselect if clicking elsewhere
-    setGameState(prev => ({
-      ...prev,
-      selectedHex: null,
-      possibleMoves: [],
-      ricochetPath: []
-    }));
-  }, [gameState, playSound, executeMove]);
+      // Check for ricochet
+      const { ricochetPath } = getPossibleMoves(from, prev.pawns);
+      const wasRicochet = isRicochetMove(from, to, ricochetPath);
+      
+      if (wasRicochet) {
+        playSound('ricochet');
+      } else {
+        playSound('move');
+      }
+
+      // Check for sandwich effects
+      const { neutralized, recovered } = checkSandwichEffects(to, prev.currentPlayer, newPawns);
+      
+      for (const hex of neutralized) {
+        const neutralizedPawn = newPawns.get(hexKey(hex));
+        if (neutralizedPawn) {
+          newPawns.set(hexKey(hex), { ...neutralizedPawn, state: 'neutralized' });
+        }
+      }
+      
+      for (const hex of recovered) {
+        const recoveredPawn = newPawns.get(hexKey(hex));
+        if (recoveredPawn) {
+          newPawns.set(hexKey(hex), { ...recoveredPawn, state: 'active' });
+        }
+      }
+      
+      // Check for captures
+      const captured = checkCapture(to, prev.currentPlayer, newPawns);
+      for (const hex of captured) {
+        newPawns.delete(hexKey(hex));
+      }
+      
+      if (neutralized.length > 0 || captured.length > 0) {
+        playSound('capture');
+      }
+
+      // Create move record
+      const move: Move = {
+        from,
+        to,
+        player: prev.currentPlayer,
+        isRicochet: wasRicochet,
+        neutralized: neutralized[0],
+        recovered: recovered[0],
+        captured: captured[0],
+        moveNumber: Math.floor((prev.moveHistory.length) / 2) + 1
+      };
+
+      const newHistory = prev.moveHistory.slice(0, prev.historyIndex + 1);
+      newHistory.push(move);
+      
+      // Save snapshot
+      setPawnSnapshots(snapshots => {
+        const newSnapshots = snapshots.slice(0, prev.historyIndex + 2);
+        newSnapshots.push(new Map(newPawns));
+        return newSnapshots;
+      });
+
+      const winner = checkWinCondition(newPawns);
+      if (winner) {
+        playSound('victory');
+      }
+
+      return {
+        ...prev,
+        pawns: newPawns,
+        currentPlayer: getOpponentColor(prev.currentPlayer),
+        selectedHex: null,
+        possibleMoves: [],
+        ricochetPath: [],
+        moveHistory: newHistory,
+        historyIndex: newHistory.length - 1,
+        gameOver: winner !== null,
+        winner
+      };
+    });
+  }, [playSound]);
+
+  const selectHex = useCallback((hex: HexCoord) => {
+    setGameState(prev => {
+      if (prev.gameOver) return prev;
+
+      const pawn = prev.pawns.get(hexKey(hex));
+      
+      // If clicking on own active pawn, select it
+      if (pawn && pawn.color === prev.currentPlayer && pawn.state === 'active') {
+        playSound('select');
+        const { moves, ricochetPath } = getPossibleMoves(hex, prev.pawns);
+        return {
+          ...prev,
+          selectedHex: hex,
+          possibleMoves: moves,
+          ricochetPath
+        };
+      }
+
+      // If a pawn is already selected
+      if (prev.selectedHex) {
+        // If clicking on the same hex, deselect
+        if (hex.q === prev.selectedHex.q && hex.r === prev.selectedHex.r) {
+          return {
+            ...prev,
+            selectedHex: null,
+            possibleMoves: [],
+            ricochetPath: []
+          };
+        }
+
+        // If clicking on a valid move, execute it
+        const isValidMove = prev.possibleMoves.some(
+          m => m.q === hex.q && m.r === hex.r
+        );
+        
+        if (isValidMove) {
+          executeMove(prev.selectedHex, hex);
+          return prev; // executeMove will handle state update
+        }
+      }
+
+      // Deselect if clicking elsewhere
+      return {
+        ...prev,
+        selectedHex: null,
+        possibleMoves: [],
+        ricochetPath: []
+      };
+    });
+  }, [playSound, executeMove]);
 
   const undo = useCallback(() => {
     if (gameState.historyIndex < 0 || gameState.gameOver) return;
@@ -304,6 +403,7 @@ export function useGameState() {
   return {
     gameState,
     selectHex,
+    executeMoveDirect,
     undo,
     redo,
     resetGame,
