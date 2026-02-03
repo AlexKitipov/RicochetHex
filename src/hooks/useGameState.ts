@@ -292,14 +292,99 @@ export function useGameState() {
           };
         }
 
-        // If clicking on a valid move, execute it
+        // If clicking on a valid move, execute it inline
         const isValidMove = prev.possibleMoves.some(
           m => m.q === hex.q && m.r === hex.r
         );
         
         if (isValidMove) {
-          executeMove(prev.selectedHex, hex);
-          return prev; // executeMove will handle state update
+          const from = prev.selectedHex;
+          const to = hex;
+          
+          const newPawns = new Map(prev.pawns);
+          const movingPawn = newPawns.get(hexKey(from));
+          
+          if (!movingPawn) return prev;
+
+          // Move the pawn
+          newPawns.delete(hexKey(from));
+          newPawns.set(hexKey(to), movingPawn);
+
+          // Check for ricochet
+          const wasRicochet = isRicochetMove(from, to, prev.ricochetPath);
+          
+          if (wasRicochet) {
+            playSound('ricochet');
+          } else {
+            playSound('move');
+          }
+
+          // Check for sandwich effects
+          const { neutralized, recovered } = checkSandwichEffects(to, prev.currentPlayer, newPawns);
+          
+          for (const h of neutralized) {
+            const neutralizedPawn = newPawns.get(hexKey(h));
+            if (neutralizedPawn) {
+              newPawns.set(hexKey(h), { ...neutralizedPawn, state: 'neutralized' });
+            }
+          }
+          
+          for (const h of recovered) {
+            const recoveredPawn = newPawns.get(hexKey(h));
+            if (recoveredPawn) {
+              newPawns.set(hexKey(h), { ...recoveredPawn, state: 'active' });
+            }
+          }
+          
+          // Check for captures
+          const captured = checkCapture(to, prev.currentPlayer, newPawns);
+          for (const h of captured) {
+            newPawns.delete(hexKey(h));
+          }
+          
+          if (neutralized.length > 0 || captured.length > 0) {
+            playSound('capture');
+          }
+
+          // Create move record
+          const move: Move = {
+            from,
+            to,
+            player: prev.currentPlayer,
+            isRicochet: wasRicochet,
+            neutralized: neutralized[0],
+            recovered: recovered[0],
+            captured: captured[0],
+            moveNumber: Math.floor((prev.moveHistory.length) / 2) + 1
+          };
+
+          const newHistory = prev.moveHistory.slice(0, prev.historyIndex + 1);
+          newHistory.push(move);
+          
+          // Save snapshot for undo
+          setPawnSnapshots(snapshots => {
+            const newSnapshots = snapshots.slice(0, prev.historyIndex + 2);
+            newSnapshots.push(new Map(newPawns));
+            return newSnapshots;
+          });
+
+          const winner = checkWinCondition(newPawns);
+          if (winner) {
+            playSound('victory');
+          }
+
+          return {
+            ...prev,
+            pawns: newPawns,
+            currentPlayer: getOpponentColor(prev.currentPlayer),
+            selectedHex: null,
+            possibleMoves: [],
+            ricochetPath: [],
+            moveHistory: newHistory,
+            historyIndex: newHistory.length - 1,
+            gameOver: winner !== null,
+            winner
+          };
         }
       }
 
@@ -311,7 +396,7 @@ export function useGameState() {
         ricochetPath: []
       };
     });
-  }, [playSound, executeMove]);
+  }, [playSound]);
 
   const undo = useCallback(() => {
     if (gameState.historyIndex < 0 || gameState.gameOver) return;
