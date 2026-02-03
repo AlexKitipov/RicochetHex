@@ -23,6 +23,10 @@ export function useAIGame(options: UseAIGameOptions) {
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const gameStateRef = useRef(gameState);
+  
+  // Keep ref updated
+  gameStateRef.current = gameState;
   
   // AI plays as opponent color in vs-ai mode
   const aiColor = getOpponentColor(playerColor);
@@ -50,19 +54,19 @@ export function useAIGame(options: UseAIGameOptions) {
     const currentDifficulty = getCurrentAIDifficulty();
     const currentColor = mode === 'ai-vs-ai' ? gameState.currentPlayer : aiColor;
     
-    // Add delay for natural feel
     const thinkingTime = currentDifficulty === 'easy' ? 500 : currentDifficulty === 'medium' ? 800 : 1200;
     
     aiTimeoutRef.current = setTimeout(() => {
-      const move = getAIMove(gameState.pawns, currentColor, currentDifficulty);
+      // Use ref to get current state inside timeout
+      const currentState = gameStateRef.current;
+      const move = getAIMove(currentState.pawns, currentColor, currentDifficulty);
       
       if (move) {
-        // Use direct execution - no timing issues
         executeMoveDirect(move.from, move.to);
       }
       setIsAIThinking(false);
     }, thinkingTime);
-  }, [isAITurn, isAIThinking, isPaused, gameState.pawns, gameState.currentPlayer, executeMoveDirect, aiColor, mode, getCurrentAIDifficulty]);
+  }, [isAITurn, isAIThinking, isPaused, gameState.currentPlayer, executeMoveDirect, aiColor, mode, getCurrentAIDifficulty]);
 
   // Trigger AI move when it's AI's turn
   useEffect(() => {
