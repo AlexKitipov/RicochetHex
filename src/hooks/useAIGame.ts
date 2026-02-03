@@ -18,7 +18,7 @@ export function useAIGame(options: UseAIGameOptions) {
   const { mode, difficulty, playerColor, blueDifficulty = 'medium', redDifficulty = 'medium' } = options;
   const gameStateHook = useGameState();
   const { gameState, selectHex, executeMoveDirect, resetGame: baseResetGame, getPawnSnapshots, loadGameState } = gameStateHook;
-  const { saveGame: saveToStorage, loadGame: loadFromStorage, hasSavedGame, deleteSavedGame } = useGameSaveLoad();
+  const { saveGame: saveToStorage, loadGame: loadFromStorage, hasSavedGame, deleteSavedGame } = useGameSaveLoad();  
   
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -49,6 +49,9 @@ export function useAIGame(options: UseAIGameOptions) {
   const executeAIMove = useCallback(() => {
     if (!isAITurn || isAIThinking || isPaused) return;
     
+    // Diagnostic log: AI move scheduling
+    console.debug('[useAIGame] executeAIMove called', { isAITurn, isAIThinking, isPaused, currentPlayer: gameState.currentPlayer });
+
     setIsAIThinking(true);
     
     const currentDifficulty = getCurrentAIDifficulty();
@@ -56,15 +59,42 @@ export function useAIGame(options: UseAIGameOptions) {
     
     const thinkingTime = currentDifficulty === 'easy' ? 500 : currentDifficulty === 'medium' ? 800 : 1200;
     
+    // Clear any existing timeout before scheduling a new one
+    if (aiTimeoutRef.current) {
+      clearTimeout(aiTimeoutRef.current);
+      aiTimeoutRef.current = null;
+    }
+
     aiTimeoutRef.current = setTimeout(() => {
-      // Use ref to get current state inside timeout
-      const currentState = gameStateRef.current;
-      const move = getAIMove(currentState.pawns, currentColor, currentDifficulty);
-      
-      if (move) {
-        executeMoveDirect(move.from, move.to);
+      try {
+        // Use ref to get current state inside timeout
+        const currentState = gameStateRef.current;
+        console.debug('[useAIGame] computing AI move', { currentColor, currentDifficulty, pawnsCount: currentState.pawns.size });
+
+        const move = getAIMove(currentState.pawns, currentColor, currentDifficulty);
+        console.debug('[useAIGame] getAIMove result', { move });
+        
+        if (move) {
+          try {
+            executeMoveDirect(move.from, move.to);
+            console.debug('[useAIGame] executeMoveDirect succeeded', { from: move.from, to: move.to });
+          } catch (execErr) {
+            console.error('[useAIGame] executeMoveDirect threw', execErr);
+          }
+        } else {
+          console.debug('[useAIGame] No move returned by getAIMove');
+        }
+      } catch (err) {
+        console.error('[useAIGame] Error while computing/executing AI move', err);
+      } finally {
+        // Ensure the thinking flag is always reset
+        try {
+          setIsAIThinking(false);
+        } catch (e) {
+          // setState should not throw, but guard anyway
+          console.error('[useAIGame] Failed to reset isAIThinking flag', e);
+        }
       }
-      setIsAIThinking(false);
     }, thinkingTime);
   }, [isAITurn, isAIThinking, isPaused, gameState.currentPlayer, executeMoveDirect, aiColor, mode, getCurrentAIDifficulty]);
 
@@ -77,6 +107,7 @@ export function useAIGame(options: UseAIGameOptions) {
     return () => {
       if (aiTimeoutRef.current) {
         clearTimeout(aiTimeoutRef.current);
+        aiTimeoutRef.current = null;
       }
     };
   }, [isAITurn, executeAIMove, isAIThinking, isPaused]);
@@ -96,6 +127,7 @@ export function useAIGame(options: UseAIGameOptions) {
   const resetGame = useCallback(() => {
     if (aiTimeoutRef.current) {
       clearTimeout(aiTimeoutRef.current);
+      aiTimeoutRef.current = null;
     }
     setIsAIThinking(false);
     setIsPaused(false);
