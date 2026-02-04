@@ -103,14 +103,21 @@ export function useAIGame(options: UseAIGameOptions) {
     if (isAITurn && !isAIThinking && !isPaused) {
       executeAIMove();
     }
-    
+  }, [isAITurn, executeAIMove, isAIThinking, isPaused]);
+
+  // Cleanup any pending AI timeout only on unmount.
+  // NOTE: We intentionally do NOT clear the timeout in the effect above,
+  // because `setIsAIThinking(true)` would re-run the effect and its cleanup,
+  // potentially cancelling the scheduled AI move (a common cause of AI-vs-AI
+  // getting stuck after a few moves).
+  useEffect(() => {
     return () => {
       if (aiTimeoutRef.current) {
         clearTimeout(aiTimeoutRef.current);
         aiTimeoutRef.current = null;
       }
     };
-  }, [isAITurn, executeAIMove, isAIThinking, isPaused]);
+  }, []);
 
   // Wrapper for selectHex that prevents moves during AI turn
   const selectHexWrapper = useCallback((hex: { q: number; r: number }) => {
