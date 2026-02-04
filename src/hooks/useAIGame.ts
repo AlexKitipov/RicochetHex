@@ -24,9 +24,13 @@ export function useAIGame(options: UseAIGameOptions) {
   const [isPaused, setIsPaused] = useState(false);
   const aiTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const gameStateRef = useRef(gameState);
+  const isAIThinkingRef = useRef(isAIThinking);
+  const isPausedRef = useRef(isPaused);
   
-  // Keep ref updated
+  // Keep refs updated
   gameStateRef.current = gameState;
+  isAIThinkingRef.current = isAIThinking;
+  isPausedRef.current = isPaused;
   
   // AI plays as opponent color in vs-ai mode
   const aiColor = getOpponentColor(playerColor);
@@ -46,16 +50,31 @@ export function useAIGame(options: UseAIGameOptions) {
   }, [mode, gameState.currentPlayer, blueDifficulty, redDifficulty, difficulty]);
 
   // Execute AI move using direct execution
+  // Using refs to avoid dependency issues that cause the effect to re-run and cancel timeouts
   const executeAIMove = useCallback(() => {
-    if (!isAITurn || isAIThinking || isPaused) return;
+    // Use refs for all checks to avoid stale closure issues
+    const currentState = gameStateRef.current;
+    const thinking = isAIThinkingRef.current;
+    const paused = isPausedRef.current;
+    
+    // Check conditions using current state
+    const currentIsAITurn = !currentState.gameOver && (
+      (mode === 'vs-ai' && currentState.currentPlayer === aiColor) ||
+      (mode === 'ai-vs-ai')
+    );
+    
+    if (!currentIsAITurn || thinking || paused) return;
     
     // Diagnostic log: AI move scheduling
-    console.debug('[useAIGame] executeAIMove called', { isAITurn, isAIThinking, isPaused, currentPlayer: gameState.currentPlayer });
+    console.debug('[useAIGame] executeAIMove called', { currentIsAITurn, thinking, paused, currentPlayer: currentState.currentPlayer });
 
     setIsAIThinking(true);
     
-    const currentDifficulty = getCurrentAIDifficulty();
-    const currentColor = mode === 'ai-vs-ai' ? gameState.currentPlayer : aiColor;
+    // Get difficulty for current player
+    const currentDifficulty = mode === 'ai-vs-ai' 
+      ? (currentState.currentPlayer === 'blue' ? blueDifficulty : redDifficulty)
+      : difficulty;
+    const currentColor = mode === 'ai-vs-ai' ? currentState.currentPlayer : aiColor;
     
     const thinkingTime = currentDifficulty === 'easy' ? 500 : currentDifficulty === 'medium' ? 800 : 1200;
     
@@ -68,10 +87,10 @@ export function useAIGame(options: UseAIGameOptions) {
     aiTimeoutRef.current = setTimeout(() => {
       try {
         // Use ref to get current state inside timeout
-        const currentState = gameStateRef.current;
-        console.debug('[useAIGame] computing AI move', { currentColor, currentDifficulty, pawnsCount: currentState.pawns.size });
+        const stateAtExecution = gameStateRef.current;
+        console.debug('[useAIGame] computing AI move', { currentColor, currentDifficulty, pawnsCount: stateAtExecution.pawns.size });
 
-        const move = getAIMove(currentState.pawns, currentColor, currentDifficulty);
+        const move = getAIMove(stateAtExecution.pawns, currentColor, currentDifficulty);
         console.debug('[useAIGame] getAIMove result', { move });
         
         if (move) {
@@ -88,22 +107,42 @@ export function useAIGame(options: UseAIGameOptions) {
         console.error('[useAIGame] Error while computing/executing AI move', err);
       } finally {
         // Ensure the thinking flag is always reset
-        try {
-          setIsAIThinking(false);
-        } catch (e) {
-          // setState should not throw, but guard anyway
-          console.error('[useAIGame] Failed to reset isAIThinking flag', e);
-        }
+        setIsAIThinking(false);
       }
     }, thinkingTime);
-  }, [isAITurn, isAIThinking, isPaused, gameState.currentPlayer, executeMoveDirect, aiColor, mode, getCurrentAIDifficulty]);
+  }, [mode, aiColor, blueDifficulty, redDifficulty, difficulty, executeMoveDirect]);
 
-  // Trigger AI move when it's AI's turn
+  // Trigger AI move when it's AI's turn - use a stable interval-based approach
+  // to avoid issues with effect cleanup canceling pending AI moves
   useEffect(() => {
-    if (isAITurn && !isAIThinking && !isPaused) {
-      executeAIMove();
-    }
-  }, [isAITurn, executeAIMove, isAIThinking, isPaused]);
+    // Only run in AI modes
+    if (mode === 'local') return;
+    
+    const checkAndExecuteAI = () => {
+      const currentState = gameStateRef.current;
+      const thinking = isAIThinkingRef.current;
+      const paused = isPausedRef.current;
+      
+      const shouldAIMove = !currentState.gameOver && !thinking && !paused && (
+        (mode === 'vs-ai' && currentState.currentPlayer === aiColor) ||
+        (mode === 'ai-vs-ai')
+      );
+      
+      if (shouldAIMove) {
+        executeAIMove();
+      }
+    };
+    
+    // Check immediately
+    checkAndExecuteAI();
+    
+    // Also set up an interval to catch any missed triggers
+    const intervalId = setInterval(checkAndExecuteAI, 200);
+    
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [mode, aiColor, executeAIMove]);
 
   // Cleanup any pending AI timeout only on unmount.
   // NOTE: We intentionally do NOT clear the timeout in the effect above,
