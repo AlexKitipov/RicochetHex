@@ -10,6 +10,7 @@ import type { PlayerColor } from '@/lib/hexUtils';
 import type { AIDifficulty } from '@/lib/gameAI';
 
 const Index = () => {
+  // ============ ALL HOOKS MUST BE CALLED FIRST (before any conditional returns) ============
   const [gameStarted, setGameStarted] = useState(false);
   const [gameMode, setGameMode] = useState<GameMode>('local');
   const [aiDifficulty, setAIDifficulty] = useState<AIDifficulty>('easy');
@@ -17,6 +18,11 @@ const Index = () => {
   const [blueDifficulty, setBlueDifficulty] = useState<AIDifficulty>('medium');
   const [redDifficulty, setRedDifficulty] = useState<AIDifficulty>('medium');
   
+  // Sound and mobile hooks - called unconditionally
+  const { soundEnabled, toggleSound } = useSoundEffects();
+  const isMobile = useIsMobile();
+  
+  // AI game hook - called unconditionally  
   const { 
     gameState, 
     selectHex, 
@@ -39,9 +45,7 @@ const Index = () => {
     blueDifficulty,
     redDifficulty
   });
-  
-  const { soundEnabled, toggleSound } = useSoundEffects();
-  const isMobile = useIsMobile();
+  // ============ END OF HOOKS ============
   
   const handleStartGame = (
     mode: GameMode, 
