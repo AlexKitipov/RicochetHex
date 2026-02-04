@@ -382,20 +382,40 @@ export function getMinimaxMove(
 ): AIMove | null {
   const allMoves = getAllValidMoves(pawns, player);
   
-  if (allMoves.length === 0) return null;
+  console.debug('[getMinimaxMove] Starting', { player, depth, movesCount: allMoves.length });
   
-  let bestMove = allMoves[0];
+  if (allMoves.length === 0) {
+    console.debug('[getMinimaxMove] No valid moves available');
+    return null;
+  }
+  
+  let bestMove: AIMove | null = allMoves[0]; // Default to first move as fallback
   let bestScore = -Infinity;
   
   for (const move of allMoves) {
     const { newPawns } = simulateMove(move.from, move.to, pawns, player);
     const score = minimax(newPawns, player, depth - 1, -Infinity, Infinity, false, player);
+    
+    // Guard against NaN or undefined scores
+    if (typeof score !== 'number' || isNaN(score)) {
+      console.warn('[getMinimaxMove] Invalid score from minimax', { move, score });
+      continue;
+    }
+    
     move.score = score;
     
     if (score > bestScore) {
       bestScore = score;
       bestMove = move;
     }
+  }
+  
+  console.debug('[getMinimaxMove] Result', { bestMove, bestScore });
+  
+  // Ensure we always return a move if moves are available
+  if (!bestMove && allMoves.length > 0) {
+    console.warn('[getMinimaxMove] No best move selected, using first available move');
+    bestMove = allMoves[0];
   }
   
   return bestMove;
@@ -407,11 +427,31 @@ export function getAIMove(
   player: PlayerColor,
   difficulty: AIDifficulty
 ): AIMove | null {
+  console.debug('[getAIMove] Called', { player, difficulty, pawnsCount: pawns.size });
+  
+  let move: AIMove | null = null;
+  
   if (difficulty === 'easy') {
-    return getRandomMove(pawns, player);
+    move = getRandomMove(pawns, player);
+  } else if (difficulty === 'hard') {
+    move = getMinimaxMove(pawns, player, 3);
+    
+    // Fallback: if minimax fails, try getBestMove
+    if (!move) {
+      console.warn('[getAIMove] Minimax returned null, falling back to getBestMove');
+      move = getBestMove(pawns, player);
+    }
+    
+    // Final fallback: try random move
+    if (!move) {
+      console.warn('[getAIMove] getBestMove also failed, falling back to getRandomMove');
+      move = getRandomMove(pawns, player);
+    }
+  } else {
+    // medium difficulty
+    move = getBestMove(pawns, player);
   }
-  if (difficulty === 'hard') {
-    return getMinimaxMove(pawns, player, 3);
-  }
-  return getBestMove(pawns, player);
+  
+  console.debug('[getAIMove] Final result', { move, difficulty });
+  return move;
 }
