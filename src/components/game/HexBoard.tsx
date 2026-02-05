@@ -50,16 +50,19 @@ export const HexBoard: React.FC<HexBoardProps> = ({
     if (!container) return;
 
     const updateSize = () => {
-      const containerWidth = container.clientWidth;
-      const containerHeight = container.clientHeight;
-      
-      // Calculate scale factor based on available space - no caps for full responsiveness
-      const scaleX = containerWidth / baseDimensions.width;
-      const scaleY = containerHeight / baseDimensions.height;
-      const scale = Math.min(scaleX, scaleY);
-      
-      const newHexSize = BASE_HEX_SIZE * scale;
-      setHexSize(newHexSize);
+      // Use requestAnimationFrame to batch layout reads and avoid forced reflows
+      requestAnimationFrame(() => {
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        
+        // Calculate scale factor based on available space - no caps for full responsiveness
+        const scaleX = containerWidth / baseDimensions.width;
+        const scaleY = containerHeight / baseDimensions.height;
+        const scale = Math.min(scaleX, scaleY);
+        
+        const newHexSize = BASE_HEX_SIZE * scale;
+        setHexSize(newHexSize);
+      });
     };
 
     const resizeObserver = new ResizeObserver(updateSize);
