@@ -23,6 +23,8 @@ export const HexBoard: React.FC<HexBoardProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hexSize, setHexSize] = useState(BASE_HEX_SIZE);
+  const rafIdRef = useRef<number | null>(null);
+  const lastSizeRef = useRef<number>(BASE_HEX_SIZE);
   const hexGrid = useMemo(() => generateHexGrid(SIDE_LENGTH), []);
 
   // Calculate base board dimensions (used to determine scale)
@@ -49,27 +51,43 @@ export const HexBoard: React.FC<HexBoardProps> = ({
     const container = containerRef.current;
     if (!container) return;
 
-    const updateSize = () => {
-      // Use requestAnimationFrame to batch layout reads and avoid forced reflows
-      requestAnimationFrame(() => {
-        const containerWidth = container.clientWidth;
-        const containerHeight = container.clientHeight;
-        
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+
+      // Avoid reading layout metrics like clientWidth/clientHeight here.
+      // contentRect is provided by ResizeObserver and doesn't force synchronous reflow.
+      const { width: containerWidth, height: containerHeight } = entry.contentRect;
+
+      if (rafIdRef.current != null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+
+      rafIdRef.current = requestAnimationFrame(() => {
         // Calculate scale factor based on available space - no caps for full responsiveness
         const scaleX = containerWidth / baseDimensions.width;
         const scaleY = containerHeight / baseDimensions.height;
         const scale = Math.min(scaleX, scaleY);
-        
+
         const newHexSize = BASE_HEX_SIZE * scale;
-        setHexSize(newHexSize);
+
+        // Guard against micro updates to reduce unnecessary renders during resize.
+        if (Math.abs(newHexSize - lastSizeRef.current) > 0.1) {
+          lastSizeRef.current = newHexSize;
+          setHexSize(newHexSize);
+        }
       });
-    };
-
-    const resizeObserver = new ResizeObserver(updateSize);
+    });
     resizeObserver.observe(container);
-    updateSize();
 
-    return () => resizeObserver.disconnect();
+    // Initial measurement: ResizeObserver will fire at least once after observe().
+
+    return () => {
+      resizeObserver.disconnect();
+      if (rafIdRef.current != null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
   }, [baseDimensions]);
 
   // Calculate board dimensions based on current hex size
