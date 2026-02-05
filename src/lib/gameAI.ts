@@ -434,7 +434,7 @@ export function getAIMove(
   if (difficulty === 'easy') {
     move = getRandomMove(pawns, player);
   } else if (difficulty === 'hard') {
-    move = getMinimaxMove(pawns, player, 3);
+    move = getMinimaxMove(pawns, player, 2);
     
     // Fallback: if minimax fails, try getBestMove
     if (!move) {
