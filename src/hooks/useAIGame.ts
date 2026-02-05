@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useGameState } from './useGameState';
 import { useGameSaveLoad, SavedGame } from './useGameSaveLoad';
-import { getAIMove, AIDifficulty } from '@/lib/gameAI';
+import { getAIMove, getBestMove, getRandomMove, AIDifficulty } from '@/lib/gameAI';
 import { PlayerColor, getOpponentColor, Pawn } from '@/lib/hexUtils';
 
 export type GameMode = 'local' | 'vs-ai' | 'ai-vs-ai';
@@ -101,7 +101,19 @@ export function useAIGame(options: UseAIGameOptions) {
             console.error('[useAIGame] executeMoveDirect threw', execErr);
           }
         } else {
-          console.debug('[useAIGame] No move returned by getAIMove');
+          console.warn('[useAIGame] No move returned by getAIMove; attempting fallbacks');
+          // Try medium-style best move or random to avoid lock
+          try {
+            const fallback = getBestMove(stateAtExecution.pawns, currentColor) || getRandomMove(stateAtExecution.pawns, currentColor);
+            if (fallback) {
+              executeMoveDirect(fallback.from, fallback.to);
+              console.debug('[useAIGame] executeMoveDirect succeeded with fallback', { from: fallback.from, to: fallback.to });
+            } else {
+              console.error('[useAIGame] No fallback move available — possible terminal position or move-generation bug', { pawnsCount: stateAtExecution.pawns.size });
+            }
+          } catch (fallbackErr) {
+            console.error('[useAIGame] Fallback execution failed', fallbackErr);
+          }
         }
       } catch (err) {
         console.error('[useAIGame] Error while computing/executing AI move', err);
