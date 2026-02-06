@@ -439,6 +439,14 @@ export function getMinimaxMove(
     transpositionTable.clear();
   }
   
+  // Move ordering: evaluate moves tactically for better alpha-beta pruning
+  const orderedMoves = allMoves
+    .map(move => ({
+      ...move,
+      score: evaluateMove(move.from, move.to, pawns, player),
+    }))
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  
   let bestMove: AIMove | null = null;
   let bestScore = -Infinity;
   
@@ -447,7 +455,7 @@ export function getMinimaxMove(
     let depthBestMove: AIMove | null = null;
     let depthBestScore = -Infinity;
     
-    for (const move of allMoves) {
+    for (const move of orderedMoves) {
       const { newPawns } = simulateMove(move.from, move.to, pawns, player);
       const score = minimax(
         newPawns, 
@@ -481,13 +489,18 @@ export function getMinimaxMove(
   }
   
   // Ensure we always return a move if moves are available
-  if (!bestMove && allMoves.length > 0) {
+  if (!bestMove && orderedMoves.length > 0) {
     console.warn('[getMinimaxMove] No best move selected, using first available move');
-    bestMove = allMoves[0];
+    bestMove = orderedMoves[0];
   }
   
   console.debug('[getMinimaxMove] Final result', { bestMove, bestScore });
   return bestMove;
+}
+
+// Reset AI state (call between games)
+export function resetAIState(): void {
+  clearTranspositionTable();
 }
 
 // Main AI function to get the AI's move based on difficulty
@@ -503,8 +516,11 @@ export function getAIMove(
   if (difficulty === 'easy') {
     move = getRandomMove(pawns, player);
   } else if (difficulty === 'hard') {
-    // Use iterative deepening minimax with depth 4
-    move = getMinimaxMove(pawns, player, 4);
+    // Dynamic depth based on move count to prevent freezing
+    const movesCount = getAllValidMoves(pawns, player).length;
+    const dynamicDepth = movesCount > 25 ? 3 : 4;
+    
+    move = getMinimaxMove(pawns, player, dynamicDepth);
     
     // Fallback: if minimax fails, try getBestMove
     if (!move) {
