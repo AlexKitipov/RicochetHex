@@ -21,6 +21,28 @@ export interface AIMove {
   score?: number;
 }
 
+// Transposition table for caching evaluated positions
+const transpositionTable = new Map<string, { score: number; depth: number }>();
+
+// Deep clone pawns map to avoid mutation issues in minimax
+function clonePawns(pawns: Map<string, Pawn>): Map<string, Pawn> {
+  const newMap = new Map<string, Pawn>();
+  pawns.forEach((pawn, key) => {
+    newMap.set(key, { ...pawn });
+  });
+  return newMap;
+}
+
+// Create a hash of the current position for transposition table
+function hashPosition(pawns: Map<string, Pawn>, currentPlayer: PlayerColor): string {
+  const entries: string[] = [];
+  pawns.forEach((pawn, key) => {
+    entries.push(`${key}:${pawn.color}:${pawn.state}`);
+  });
+  entries.sort();
+  return `${currentPlayer}|` + entries.join('|');
+}
+
 // Get all valid moves for a player
 export function getAllValidMoves(
   pawns: Map<string, Pawn>,
@@ -42,7 +64,7 @@ export function getAllValidMoves(
   return moves;
 }
 
-// Simulate a move and return the resulting pawn state
+// Simulate a move and return the resulting pawn state (with deep clone)
 function simulateMove(
   from: HexCoord,
   to: HexCoord,
@@ -54,16 +76,17 @@ function simulateMove(
   recovered: HexCoord[];
   captured: HexCoord[];
 } {
-  const newPawns = new Map(pawns);
+  // Deep clone to avoid mutation issues
+  const newPawns = clonePawns(pawns);
   const pawn = newPawns.get(hexKey(from));
   
   if (!pawn) {
     return { newPawns, neutralized: [], recovered: [], captured: [] };
   }
   
-  // Move the pawn
+  // Move the pawn (create new object to avoid mutation)
   newPawns.delete(hexKey(from));
-  newPawns.set(hexKey(to), pawn);
+  newPawns.set(hexKey(to), { ...pawn });
   
   // Check effects
   const { neutralized, recovered } = checkSandwichEffects(to, player, newPawns);
@@ -195,13 +218,12 @@ export function evaluateMove(
   score += recovered.length * 25;
   
   // Check if this move puts the pawn in danger of being neutralized
-  const opponent = getOpponentColor(player);
   const dangerPenalty = checkIfInDanger(to, player, newPawns);
   score -= dangerPenalty;
   
-  // Evaluate resulting position
+  // Evaluate resulting position with reduced weight to avoid dominating immediate gains
   const positionScore = evaluatePosition(newPawns, player);
-  score += positionScore * 0.1; // Weight position less than immediate gains
+  score += positionScore * 0.03;
   
   return score;
 }
@@ -294,19 +316,28 @@ export function getBestMove(
   return bestMove;
 }
 
-// Minimax with alpha-beta pruning for Hard difficulty
+// Minimax with alpha-beta pruning and transposition table
 function minimax(
   pawns: Map<string, Pawn>,
-  player: PlayerColor,
+  currentPlayer: PlayerColor,
   depth: number,
   alpha: number,
   beta: number,
   maximizingPlayer: boolean,
   originalPlayer: PlayerColor
 ): number {
+  // Check transposition table
+  const hash = hashPosition(pawns, currentPlayer);
+  const cached = transpositionTable.get(hash);
+  if (cached !== undefined && cached.depth >= depth) {
+    return cached.score;
+  }
+  
   // Check for terminal state or depth limit
   if (depth === 0) {
-    return evaluatePosition(pawns, originalPlayer);
+    const evalScore = evaluatePosition(pawns, originalPlayer);
+    transpositionTable.set(hash, { score: evalScore, depth });
+    return evalScore;
   }
   
   // Check for game over conditions
@@ -331,86 +362,123 @@ function minimax(
     }
   });
   
-  // Terminal conditions
-  if (blueOnTarget >= 2 || redActive === 0) {
-    return originalPlayer === 'blue' ? 10000 + depth : -10000 - depth;
+  // Terminal conditions - win requires 3 pawns on target rank
+  if (blueOnTarget >= 3 || redActive === 0) {
+    const val = originalPlayer === 'blue' ? 10000 + depth : -10000 - depth;
+    transpositionTable.set(hash, { score: val, depth });
+    return val;
   }
-  if (redOnTarget >= 2 || blueActive === 0) {
-    return originalPlayer === 'red' ? 10000 + depth : -10000 - depth;
+  if (redOnTarget >= 3 || blueActive === 0) {
+    const val = originalPlayer === 'red' ? 10000 + depth : -10000 - depth;
+    transpositionTable.set(hash, { score: val, depth });
+    return val;
   }
   
-  const currentPlayer = maximizingPlayer ? originalPlayer : getOpponentColor(originalPlayer);
   const moves = getAllValidMoves(pawns, currentPlayer);
   
   if (moves.length === 0) {
-    return evaluatePosition(pawns, originalPlayer);
+    const evalScore = evaluatePosition(pawns, originalPlayer);
+    transpositionTable.set(hash, { score: evalScore, depth });
+    return evalScore;
   }
+  
+  // Properly alternate players each turn
+  const nextPlayer = getOpponentColor(currentPlayer);
   
   if (maximizingPlayer) {
     let maxEval = -Infinity;
     
     for (const move of moves) {
       const { newPawns } = simulateMove(move.from, move.to, pawns, currentPlayer);
-      const evalScore = minimax(newPawns, player, depth - 1, alpha, beta, false, originalPlayer);
+      const evalScore = minimax(newPawns, nextPlayer, depth - 1, alpha, beta, false, originalPlayer);
       maxEval = Math.max(maxEval, evalScore);
       alpha = Math.max(alpha, evalScore);
       if (beta <= alpha) break; // Alpha-beta pruning
     }
     
+    transpositionTable.set(hash, { score: maxEval, depth });
     return maxEval;
   } else {
     let minEval = Infinity;
     
     for (const move of moves) {
       const { newPawns } = simulateMove(move.from, move.to, pawns, currentPlayer);
-      const evalScore = minimax(newPawns, player, depth - 1, alpha, beta, true, originalPlayer);
+      const evalScore = minimax(newPawns, nextPlayer, depth - 1, alpha, beta, true, originalPlayer);
       minEval = Math.min(minEval, evalScore);
       beta = Math.min(beta, evalScore);
       if (beta <= alpha) break; // Alpha-beta pruning
     }
     
+    transpositionTable.set(hash, { score: minEval, depth });
     return minEval;
   }
 }
 
+// Clear transposition table (call between games or when it gets too large)
+export function clearTranspositionTable(): void {
+  transpositionTable.clear();
+}
 
-// Get best move using minimax (Hard difficulty)
+// Get best move using minimax with iterative deepening (Hard difficulty)
 export function getMinimaxMove(
   pawns: Map<string, Pawn>,
   player: PlayerColor,
-  depth: number = 3
+  maxDepth: number = 4
 ): AIMove | null {
   const allMoves = getAllValidMoves(pawns, player);
   
-  console.debug('[getMinimaxMove] Starting', { player, depth, movesCount: allMoves.length });
+  console.debug('[getMinimaxMove] Starting', { player, maxDepth, movesCount: allMoves.length });
   
   if (allMoves.length === 0) {
     console.debug('[getMinimaxMove] No valid moves available');
     return null;
   }
   
-  let bestMove: AIMove | null = allMoves[0]; // Default to first move as fallback
-  let bestScore = -Infinity;
-  
-  for (const move of allMoves) {
-    const { newPawns } = simulateMove(move.from, move.to, pawns, player);
-    const score = minimax(newPawns, player, depth - 1, -Infinity, Infinity, false, player);
-    
-    // Guard against NaN or undefined scores
-    if (typeof score !== 'number' || isNaN(score)) {
-      console.warn('[getMinimaxMove] Invalid score from minimax', { move, score });
-      continue;
-    }
-    
-    move.score = score;
-    
-    if (score > bestScore) {
-      bestScore = score;
-      bestMove = move;
-    }
+  // Clear transposition table if it gets too large
+  if (transpositionTable.size > 100000) {
+    transpositionTable.clear();
   }
   
-  console.debug('[getMinimaxMove] Result', { bestMove, bestScore });
+  let bestMove: AIMove | null = null;
+  let bestScore = -Infinity;
+  
+  // Iterative deepening - start shallow, go deeper
+  for (let depth = 2; depth <= maxDepth; depth++) {
+    let depthBestMove: AIMove | null = null;
+    let depthBestScore = -Infinity;
+    
+    for (const move of allMoves) {
+      const { newPawns } = simulateMove(move.from, move.to, pawns, player);
+      const score = minimax(
+        newPawns, 
+        getOpponentColor(player), 
+        depth - 1, 
+        -Infinity, 
+        Infinity, 
+        false, 
+        player
+      );
+      
+      // Guard against NaN or undefined scores
+      if (typeof score !== 'number' || isNaN(score)) {
+        console.warn('[getMinimaxMove] Invalid score from minimax', { move, score, depth });
+        continue;
+      }
+      
+      if (score > depthBestScore) {
+        depthBestScore = score;
+        depthBestMove = { ...move, score };
+      }
+    }
+    
+    // Update best move if this depth found a better one
+    if (depthBestMove && depthBestScore > bestScore) {
+      bestScore = depthBestScore;
+      bestMove = depthBestMove;
+    }
+    
+    console.debug('[getMinimaxMove] Depth complete', { depth, bestScore, bestMove });
+  }
   
   // Ensure we always return a move if moves are available
   if (!bestMove && allMoves.length > 0) {
@@ -418,6 +486,7 @@ export function getMinimaxMove(
     bestMove = allMoves[0];
   }
   
+  console.debug('[getMinimaxMove] Final result', { bestMove, bestScore });
   return bestMove;
 }
 
@@ -434,7 +503,8 @@ export function getAIMove(
   if (difficulty === 'easy') {
     move = getRandomMove(pawns, player);
   } else if (difficulty === 'hard') {
-    move = getMinimaxMove(pawns, player, 2);
+    // Use iterative deepening minimax with depth 4
+    move = getMinimaxMove(pawns, player, 4);
     
     // Fallback: if minimax fails, try getBestMove
     if (!move) {
