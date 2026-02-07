@@ -26,14 +26,11 @@ export interface AIMove {
 // Transposition table for caching evaluated positions
 const transpositionTable = new Map<string, { score: number; depth: number }>();
 
-// Initialize Zobrist hashing on first use
-let zobristInitialized = false;
+// Initialize Zobrist hashing on first use (checks ZOBRIST.initialized internally)
 function ensureZobristInitialized(): void {
-  if (!zobristInitialized) {
-    const allHexes = generateHexGrid(SIDE_LENGTH).map(c => hexKey(c));
-    initZobrist(allHexes);
-    zobristInitialized = true;
-  }
+  if (ZOBRIST.initialized) return;
+  const allHexes = generateHexGrid(SIDE_LENGTH).map(c => hexKey(c));
+  initZobrist(allHexes);
 }
 
 // Deep clone pawns map to avoid mutation issues in minimax

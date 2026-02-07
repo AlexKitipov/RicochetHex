@@ -26,7 +26,8 @@ function keyFor(hex: string, color: PlayerColor, state: Pawn['state']): string {
 
 // Initialize Zobrist table with all possible combinations
 export function initZobrist(allHexKeys: string[]): void {
-  if (ZOBRIST.initialized) return;
+  // Double-check to prevent re-initialization
+  if (ZOBRIST.initialized || ZOBRIST.table.size > 0) return;
   
   const colors: PlayerColor[] = ['blue', 'red'];
   const states: Pawn['state'][] = ['active', 'neutralized'];
@@ -41,7 +42,6 @@ export function initZobrist(allHexKeys: string[]): void {
   }
   
   ZOBRIST.initialized = true;
-  console.debug('[Zobrist] Initialized with', ZOBRIST.table.size, 'entries');
 }
 
 // Calculate hash of current position - O(n) where n is pawn count
