@@ -10,8 +10,10 @@ import {
   checkSandwichEffects,
   checkCapture,
   getOpponentColor,
-  SIDE_LENGTH
+  SIDE_LENGTH,
+  generateHexGrid
 } from './hexUtils';
+import { initZobrist, zobristHash, ZOBRIST } from './zobrist';
 
 export type AIDifficulty = 'easy' | 'medium' | 'hard';
 
@@ -24,6 +26,16 @@ export interface AIMove {
 // Transposition table for caching evaluated positions
 const transpositionTable = new Map<string, { score: number; depth: number }>();
 
+// Initialize Zobrist hashing on first use
+let zobristInitialized = false;
+function ensureZobristInitialized(): void {
+  if (!zobristInitialized) {
+    const allHexes = generateHexGrid(SIDE_LENGTH).map(c => hexKey(c));
+    initZobrist(allHexes);
+    zobristInitialized = true;
+  }
+}
+
 // Deep clone pawns map to avoid mutation issues in minimax
 function clonePawns(pawns: Map<string, Pawn>): Map<string, Pawn> {
   const newMap = new Map<string, Pawn>();
@@ -33,14 +45,10 @@ function clonePawns(pawns: Map<string, Pawn>): Map<string, Pawn> {
   return newMap;
 }
 
-// Create a hash of the current position for transposition table
+// Create a hash of the current position using Zobrist hashing (O(1) lookup)
 function hashPosition(pawns: Map<string, Pawn>, currentPlayer: PlayerColor): string {
-  const entries: string[] = [];
-  pawns.forEach((pawn, key) => {
-    entries.push(`${key}:${pawn.color}:${pawn.state}`);
-  });
-  entries.sort();
-  return `${currentPlayer}|` + entries.join('|');
+  ensureZobristInitialized();
+  return String(zobristHash(pawns, currentPlayer));
 }
 
 // Get all valid moves for a player
@@ -382,13 +390,21 @@ function minimax(
     return evalScore;
   }
   
+  // SHERIFF FIX: Move ordering inside minimax for better alpha-beta pruning
+  const orderedMoves = moves
+    .map(m => ({
+      ...m,
+      score: evaluateMove(m.from, m.to, pawns, currentPlayer),
+    }))
+    .sort((a, b) => (maximizingPlayer ? (b.score ?? 0) - (a.score ?? 0) : (a.score ?? 0) - (b.score ?? 0)));
+  
   // Properly alternate players each turn
   const nextPlayer = getOpponentColor(currentPlayer);
   
   if (maximizingPlayer) {
     let maxEval = -Infinity;
     
-    for (const move of moves) {
+    for (const move of orderedMoves) {
       const { newPawns } = simulateMove(move.from, move.to, pawns, currentPlayer);
       const evalScore = minimax(newPawns, nextPlayer, depth - 1, alpha, beta, false, originalPlayer);
       maxEval = Math.max(maxEval, evalScore);
@@ -401,7 +417,7 @@ function minimax(
   } else {
     let minEval = Infinity;
     
-    for (const move of moves) {
+    for (const move of orderedMoves) {
       const { newPawns } = simulateMove(move.from, move.to, pawns, currentPlayer);
       const evalScore = minimax(newPawns, nextPlayer, depth - 1, alpha, beta, true, originalPlayer);
       minEval = Math.min(minEval, evalScore);
@@ -423,7 +439,7 @@ export function clearTranspositionTable(): void {
 export function getMinimaxMove(
   pawns: Map<string, Pawn>,
   player: PlayerColor,
-  maxDepth: number = 4
+  maxDepth: number = 3  // SHERIFF FIX: Reduced from 4 to 3
 ): AIMove | null {
   const allMoves = getAllValidMoves(pawns, player);
   
@@ -434,10 +450,8 @@ export function getMinimaxMove(
     return null;
   }
   
-  // Clear transposition table if it gets too large
-  if (transpositionTable.size > 100000) {
-    transpositionTable.clear();
-  }
+  // SHERIFF FIX: Clear transposition table at each move to avoid stale/toxic entries
+  transpositionTable.clear();
   
   // Move ordering: evaluate moves tactically for better alpha-beta pruning
   const orderedMoves = allMoves
@@ -516,11 +530,8 @@ export function getAIMove(
   if (difficulty === 'easy') {
     move = getRandomMove(pawns, player);
   } else if (difficulty === 'hard') {
-    // Dynamic depth based on move count to prevent freezing
-    const movesCount = getAllValidMoves(pawns, player).length;
-    const dynamicDepth = movesCount > 25 ? 3 : 4;
-    
-    move = getMinimaxMove(pawns, player, dynamicDepth);
+    // SHERIFF FIX: Fixed depth of 3 for stability
+    move = getMinimaxMove(pawns, player, 3);
     
     // Fallback: if minimax fails, try getBestMove
     if (!move) {
