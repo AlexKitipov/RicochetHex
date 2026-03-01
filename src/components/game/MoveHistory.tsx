@@ -8,7 +8,6 @@ interface MoveHistoryProps {
 }
 
 export const MoveHistory: React.FC<MoveHistoryProps> = ({ moves, currentIndex }) => {
-  // Group moves into pairs (blue + red)
   const movePairs: { blue?: Move; red?: Move; number: number }[] = [];
   
   moves.forEach((move, index) => {
@@ -27,53 +26,44 @@ export const MoveHistory: React.FC<MoveHistoryProps> = ({ moves, currentIndex })
     const from = axialToNotation(move.from);
     const to = axialToNotation(move.to);
     let text = `${from}→${to}`;
-    
-    if (move.isRicochet) {
-      text += ' ⟲';
-    }
-    if (move.neutralized) {
-      text += ' ⊘';
-    }
-    if (move.recovered) {
-      text += ' ↺';
-    }
-    if (move.captured) {
-      text += ' ✕';
-    }
-    
+    if (move.isRicochet) text += ' ⟲';
+    if (move.neutralized) text += ' ⊘';
+    if (move.recovered) text += ' ↺';
+    if (move.captured) text += ' ✕';
     return text;
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg overflow-hidden h-full">
-      <div className="bg-muted px-4 py-3 border-b border-border">
-        <h3 className="font-semibold text-sm text-card-foreground flex items-center gap-2">
-          <span>📜</span> История на ходовете
+    <div className="glass rounded-xl overflow-hidden h-full flex flex-col">
+      <div className="px-3 py-2 border-b border-border/50">
+        <h3 className="font-semibold text-xs text-foreground flex items-center gap-1.5 uppercase tracking-wider">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+          История
         </h3>
       </div>
       
-      <ScrollArea className="h-[300px]">
+      <ScrollArea className="flex-1">
         {moves.length === 0 ? (
-          <div className="p-4 text-center text-muted-foreground text-sm">
+          <div className="p-4 text-center text-muted-foreground text-xs">
             Няма направени ходове
           </div>
         ) : (
-          <div className="p-2">
+          <div className="p-1.5">
             {movePairs.map((pair, index) => (
               <div 
                 key={index}
-                className="flex items-center gap-2 py-1.5 px-2 rounded text-sm hover:bg-muted/50"
+                className="flex items-center gap-1.5 py-1 px-2 rounded-md text-xs hover:bg-secondary/50 transition-colors"
               >
-                <span className="text-muted-foreground w-6 text-right font-mono">
+                <span className="text-muted-foreground w-5 text-right font-mono text-[10px]">
                   {pair.number}.
                 </span>
                 {pair.blue && (
-                  <span className="flex-1 text-blue-600 dark:text-blue-400 font-medium">
+                  <span className="flex-1 text-glow-blue font-medium text-[11px]">
                     {formatMove(pair.blue)}
                   </span>
                 )}
                 {pair.red && (
-                  <span className="flex-1 text-red-600 dark:text-red-400 font-medium">
+                  <span className="flex-1 text-glow-red font-medium text-[11px]">
                     {formatMove(pair.red)}
                   </span>
                 )}
@@ -83,12 +73,12 @@ export const MoveHistory: React.FC<MoveHistoryProps> = ({ moves, currentIndex })
         )}
       </ScrollArea>
       
-      <div className="px-4 py-2 border-t border-border text-xs text-muted-foreground">
-        <div className="flex gap-3 flex-wrap">
-          <span>⟲ = Рикошет</span>
-          <span>⊘ = Неутрализация</span>
-          <span>↺ = Възстановяване</span>
-          <span>✕ = Захващане</span>
+      <div className="px-3 py-1.5 border-t border-border/50 text-[9px] text-muted-foreground">
+        <div className="flex gap-2 flex-wrap">
+          <span>⟲ Рикошет</span>
+          <span>⊘ Неутр.</span>
+          <span>↺ Възст.</span>
+          <span>✕ Захв.</span>
         </div>
       </div>
     </div>

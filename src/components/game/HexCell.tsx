@@ -26,43 +26,49 @@ export const HexCell: React.FC<HexCellProps> = ({
 }) => {
   const points = getHexCorners(centerX, centerY, size);
   
-  let fillClass = hexColor === 'light' 
-    ? 'fill-[hsl(var(--hex-light))]' 
-    : 'fill-[hsl(var(--hex-dark))]';
+  // Use inline fill colors matching our dark theme tokens
+  const fillColor = hexColor === 'light' 
+    ? 'hsl(225, 15%, 22%)' 
+    : 'hsl(225, 20%, 15%)';
   
-  let strokeClass = 'stroke-amber-800/30';
-  let strokeWidth = 1;
+  let strokeColor = 'hsl(225, 15%, 28%)';
+  let strokeWidth = 0.8;
+  let glowFilter = '';
   
   if (isSelected) {
-    strokeClass = 'stroke-[hsl(var(--hex-selected))]';
-    strokeWidth = 3;
-  } else if (isRicochet) {
-    strokeClass = 'stroke-[hsl(var(--hex-ricochet))]';
+    strokeColor = 'hsl(45, 95%, 55%)';
     strokeWidth = 2.5;
-  } else if (isPossibleMove) {
-    strokeClass = 'stroke-[hsl(var(--hex-possible))]';
+    glowFilter = 'url(#selectedGlow)';
+  } else if (isRicochet) {
+    strokeColor = 'hsl(280, 75%, 60%)';
     strokeWidth = 2;
+  } else if (isPossibleMove) {
+    strokeColor = 'hsl(150, 70%, 45%)';
+    strokeWidth = 1.5;
   }
 
   return (
     <g 
-      className="cursor-pointer transition-all duration-150 hover:brightness-110"
+      className="cursor-pointer"
       onClick={onClick}
+      style={{ transition: 'opacity 0.15s' }}
     >
       <polygon
         points={points}
-        className={`${fillClass} ${strokeClass}`}
+        fill={fillColor}
+        stroke={strokeColor}
         strokeWidth={strokeWidth}
-        filter="url(#hexShadow)"
+        filter={glowFilter || 'url(#hexShadow)'}
       />
       
-      {/* Move indicator dot */}
+      {/* Move indicator */}
       {isPossibleMove && !isRicochet && (
         <circle
           cx={centerX}
           cy={centerY}
           r={size / 4}
-          className="fill-[hsl(var(--hex-possible))] opacity-60"
+          fill="hsl(150, 70%, 45%)"
+          opacity={0.5}
         />
       )}
       
@@ -72,16 +78,20 @@ export const HexCell: React.FC<HexCellProps> = ({
           cx={centerX}
           cy={centerY}
           r={size / 4}
-          className="fill-[hsl(var(--hex-ricochet))] opacity-70"
+          fill="hsl(280, 75%, 60%)"
+          opacity={0.6}
         />
       )}
       
-      {/* Hex notation label */}
+      {/* Hex label */}
       <text
         x={centerX}
         y={centerY + size * 0.35}
         textAnchor="middle"
-        className="fill-amber-900/40 text-[6px] font-medium pointer-events-none select-none"
+        fill="hsl(225, 10%, 40%)"
+        fontSize="5"
+        fontWeight="500"
+        className="pointer-events-none select-none"
       >
         {axialToNotation(coord)}
       </text>

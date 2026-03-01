@@ -133,44 +133,60 @@ export const HexBoard: React.FC<HexBoardProps> = ({
         preserveAspectRatio="xMidYMid meet"
         className="w-full h-full drop-shadow-2xl"
       >
-        {/* Wood texture background */}
+        {/* Modern dark board */}
         <defs>
-          <pattern id="woodPattern" patternUnits="userSpaceOnUse" width="100" height="100">
-            <rect width="100" height="100" fill="hsl(var(--board-light))" />
-            <path d="M0 20 Q25 18 50 20 T100 20" stroke="hsl(var(--board-grain))" strokeWidth="0.5" fill="none" opacity="0.3" />
-            <path d="M0 40 Q30 42 60 40 T100 40" stroke="hsl(var(--board-grain))" strokeWidth="0.3" fill="none" opacity="0.2" />
-            <path d="M0 60 Q20 58 40 60 T100 60" stroke="hsl(var(--board-grain))" strokeWidth="0.4" fill="none" opacity="0.25" />
-            <path d="M0 80 Q35 82 70 80 T100 80" stroke="hsl(var(--board-grain))" strokeWidth="0.3" fill="none" opacity="0.2" />
+          <linearGradient id="boardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="hsl(225, 22%, 14%)" />
+            <stop offset="50%" stopColor="hsl(225, 20%, 11%)" />
+            <stop offset="100%" stopColor="hsl(225, 25%, 9%)" />
+          </linearGradient>
+
+          {/* Subtle grid pattern */}
+          <pattern id="gridPattern" patternUnits="userSpaceOnUse" width="60" height="60">
+            <rect width="60" height="60" fill="none" />
+            <path d="M0 30 L60 30" stroke="hsl(225, 15%, 18%)" strokeWidth="0.3" opacity="0.5" />
+            <path d="M30 0 L30 60" stroke="hsl(225, 15%, 18%)" strokeWidth="0.3" opacity="0.5" />
           </pattern>
           
           <filter id="hexShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.3" />
+            <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="hsl(0,0%,0%)" floodOpacity="0.5" />
+          </filter>
+
+          <filter id="selectedGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="hsl(45,95%,55%)" floodOpacity="0.5" />
           </filter>
           
           <filter id="pawnShadow" x="-50%" y="-50%" width="200%" height="200%">
-            <feDropShadow dx="0" dy="3" stdDeviation="3" floodOpacity="0.4" />
+            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="hsl(0,0%,0%)" floodOpacity="0.6" />
           </filter>
 
           <linearGradient id="bluePawnGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(var(--pawn-blue-light))" />
-            <stop offset="50%" stopColor="hsl(var(--pawn-blue))" />
-            <stop offset="100%" stopColor="hsl(var(--pawn-blue-dark))" />
+            <stop offset="0%" stopColor="hsl(200, 80%, 70%)" />
+            <stop offset="50%" stopColor="hsl(210, 85%, 55%)" />
+            <stop offset="100%" stopColor="hsl(215, 90%, 38%)" />
           </linearGradient>
 
           <linearGradient id="redPawnGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(var(--pawn-red-light))" />
-            <stop offset="50%" stopColor="hsl(var(--pawn-red))" />
-            <stop offset="100%" stopColor="hsl(var(--pawn-red-dark))" />
+            <stop offset="0%" stopColor="hsl(350, 75%, 72%)" />
+            <stop offset="50%" stopColor="hsl(355, 80%, 58%)" />
+            <stop offset="100%" stopColor="hsl(0, 85%, 40%)" />
           </linearGradient>
 
           <linearGradient id="neutralizedBlueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(50, 90%, 60%)" />
-            <stop offset="100%" stopColor="hsl(45, 85%, 45%)" />
+            <stop offset="0%" stopColor="hsl(35, 70%, 55%)" />
+            <stop offset="100%" stopColor="hsl(35, 60%, 40%)" />
           </linearGradient>
 
           <linearGradient id="neutralizedRedGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="hsl(140, 60%, 50%)" />
-            <stop offset="100%" stopColor="hsl(140, 55%, 35%)" />
+            <stop offset="0%" stopColor="hsl(150, 50%, 45%)" />
+            <stop offset="100%" stopColor="hsl(150, 45%, 32%)" />
+          </linearGradient>
+
+          {/* Border gradient */}
+          <linearGradient id="borderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="hsl(175, 80%, 45%)" stopOpacity="0.4" />
+            <stop offset="50%" stopColor="hsl(35, 95%, 55%)" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="hsl(175, 80%, 45%)" stopOpacity="0.4" />
           </linearGradient>
         </defs>
 
@@ -180,10 +196,19 @@ export const HexBoard: React.FC<HexBoardProps> = ({
           y="0" 
           width={boardWidth} 
           height={boardHeight} 
-          rx="12"
-          fill="url(#woodPattern)" 
-          className="stroke-[hsl(var(--primary))]"
-          strokeWidth="4"
+          rx="16"
+          fill="url(#boardGradient)" 
+          stroke="url(#borderGradient)"
+          strokeWidth="2"
+        />
+        <rect 
+          x="0" 
+          y="0" 
+          width={boardWidth} 
+          height={boardHeight} 
+          rx="16"
+          fill="url(#gridPattern)" 
+          opacity="0.5"
         />
 
         {/* Hex cells */}

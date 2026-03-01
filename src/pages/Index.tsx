@@ -20,11 +20,9 @@ const Index = () => {
   const [blueDifficulty, setBlueDifficulty] = useState<AIDifficulty>('medium');
   const [redDifficulty, setRedDifficulty] = useState<AIDifficulty>('medium');
   
-  // Sound and mobile hooks - called unconditionally
   const { soundEnabled, toggleSound } = useSoundEffects();
   const isMobile = useIsMobile();
   
-  // AI game hook - called unconditionally  
   const { 
     gameState, 
     selectHex, 
@@ -73,25 +71,37 @@ const Index = () => {
     baseResetGame();
   };
   
-  // Show mode selector if game hasn't started
   if (!gameStarted) {
     return <GameModeSelector onStart={handleStartGame} />;
   }
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
-      {/* Compact Header */}
-      <header className="border-b border-border bg-card shrink-0">
-        <div className="container mx-auto px-4 py-1">
-          <h1 className="text-sm md:text-base font-bold text-foreground text-center">
-            ♟️ RicochetHex <span className="font-normal text-muted-foreground text-xs hidden sm:inline">— Шестоъгълен стратегически шах</span>
+      {/* Header with gradient accent line */}
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm shrink-0 relative">
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+        <div className="container mx-auto px-4 py-1.5">
+          <h1 className="text-sm md:text-base font-bold text-center">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              RicochetHex
+            </span>
+            <span className="font-normal text-muted-foreground text-xs hidden sm:inline ml-2">
+              Шестоъгълен стратегически шах
+            </span>
           </h1>
         </div>
       </header>
 
       {/* Main Game Area */}
       <main className="flex-1 min-h-0 container mx-auto px-2 md:px-4 py-2 md:py-3 overflow-hidden">
-        <Suspense fallback={<div className="flex items-center justify-center h-full text-muted-foreground">Зареждане...</div>}>
+        <Suspense fallback={
+          <div className="flex items-center justify-center h-full">
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs text-muted-foreground">Зареждане...</span>
+            </div>
+          </div>
+        }>
           <div className={`
             h-full gap-2 md:gap-3
             ${isMobile 
@@ -150,8 +160,9 @@ const Index = () => {
         </Suspense>
       </main>
 
-      {/* Compact Footer */}
-      <footer className="border-t border-border bg-card shrink-0">
+      {/* Footer */}
+      <footer className="border-t border-border bg-card/50 backdrop-blur-sm shrink-0 relative">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
         <div className="container mx-auto px-3 py-0.5 text-center text-[10px] text-muted-foreground">
           Ctrl+Z/Y: Undo/Redo
         </div>
