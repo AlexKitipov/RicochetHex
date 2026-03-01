@@ -39,6 +39,7 @@ interface GameControlsProps {
   onLoad?: () => void;
   hasSavedGame?: boolean;
 }
+
 export const GameControls: React.FC<GameControlsProps> = ({
   currentPlayer,
   gameOver,
@@ -81,97 +82,120 @@ export const GameControls: React.FC<GameControlsProps> = ({
       toast.success('Играта е заредена!');
     }
   };
-  return <div className="bg-card border border-border rounded-lg px-3 py-2 space-y-1.5">
-      {/* Game Mode Badge + Player Indicator - Combined row */}
+
+  return (
+    <div className="glass rounded-xl px-3 py-2 space-y-1.5">
+      {/* Game Mode Badge + Player Indicator */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className={`
-          inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium
-          ${gameMode === 'ai-vs-ai' ? 'bg-chart-5/10 text-chart-5' : gameMode === 'vs-ai' ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}
+          inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider
+          ${gameMode === 'ai-vs-ai' 
+            ? 'bg-accent/10 text-accent border border-accent/20' 
+            : gameMode === 'vs-ai' 
+            ? 'bg-destructive/10 text-destructive border border-destructive/20' 
+            : 'bg-primary/10 text-primary border border-primary/20'}
         `}>
           {gameMode === 'ai-vs-ai' ? <>
               <Eye className="h-2.5 w-2.5" />
-              AI vs AI (🔵{difficultyLabels[blueDifficulty]} vs 🔴{difficultyLabels[redDifficulty]})
+              AI vs AI
             </> : gameMode === 'vs-ai' ? <>
               <Bot className="h-2.5 w-2.5" />
-              vs AI ({difficultyLabels[aiDifficulty]}) • Ти: {playerColor === 'blue' ? '🔵' : '🔴'}
+              vs AI ({difficultyLabels[aiDifficulty]})
             </> : <>
               <Users className="h-2.5 w-2.5" />
               Локален
             </>}
         </div>
       
-        {/* Player Indicator - inline */}
-        {gameOver ? <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-foreground">🏆</span>
-            <span className={`text-xs font-bold ${winner === 'blue' ? 'text-blue-600' : 'text-red-600'}`}>
-              {winner === 'blue' ? '🔵 Сините' : '🔴 Червените'} печелят!
-            </span>
-          </div> : <div className={`
-            inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-semibold text-xs
-            ${currentPlayer === 'blue' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' : 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'}
+        {/* Player Indicator */}
+        {gameOver ? (
+          <div className={`
+            inline-flex items-center gap-1.5 px-3 py-1 rounded-lg font-bold text-xs
+            ${winner === 'blue' 
+              ? 'bg-glow-blue/15 text-glow-blue border border-glow-blue/30 shadow-[0_0_10px_hsl(210_85%_55%/0.2)]' 
+              : 'bg-glow-red/15 text-glow-red border border-glow-red/30 shadow-[0_0_10px_hsl(355_80%_58%/0.2)]'}
+          `}>
+            🏆 {winner === 'blue' ? 'Сините' : 'Червените'} печелят!
+          </div>
+        ) : (
+          <div className={`
+            inline-flex items-center gap-1.5 px-3 py-1 rounded-lg font-semibold text-xs transition-all duration-300
+            ${currentPlayer === 'blue' 
+              ? 'bg-glow-blue/10 text-glow-blue border border-glow-blue/25' 
+              : 'bg-glow-red/10 text-glow-red border border-glow-red/25'}
           `}>
             {isAIThinking ? <>
                 <Loader2 className="h-3 w-3 animate-spin" />
                 AI мисли...
               </> : isPaused && gameMode === 'ai-vs-ai' ? <>
-                {currentPlayer === 'blue' ? '🔵' : '🔴'} (пауза)
+                <div className={`w-2 h-2 rounded-full ${currentPlayer === 'blue' ? 'bg-glow-blue' : 'bg-glow-red'}`} />
+                Пауза
               </> : <>
-                Ход: {currentPlayer === 'blue' ? '🔵' : '🔴'}
-                {gameMode === 'vs-ai' && currentPlayer === aiColor && ' AI'}
-                {gameMode === 'ai-vs-ai' && ' AI'}
+                <div className={`w-2 h-2 rounded-full ${currentPlayer === 'blue' ? 'bg-glow-blue' : 'bg-glow-red'} animate-glow-pulse`} />
+                Ход: {currentPlayer === 'blue' ? 'Сини' : 'Червени'}
+                {gameMode === 'vs-ai' && currentPlayer === aiColor && ' (AI)'}
+                {gameMode === 'ai-vs-ai' && ' (AI)'}
               </>}
-          </div>}
+          </div>
+        )}
       </div>
 
       {/* Control Buttons */}
       <div className="flex flex-wrap justify-center gap-1">
-        {/* Pause/Play button for AI vs AI */}
-        {gameMode === 'ai-vs-ai' && !gameOver && onTogglePause && <Button variant={isPaused ? "default" : "outline"} size="icon" className="h-7 w-7" onClick={onTogglePause}>
+        {gameMode === 'ai-vs-ai' && !gameOver && onTogglePause && (
+          <Button 
+            variant={isPaused ? "default" : "outline"} 
+            size="icon" 
+            className="h-7 w-7 rounded-lg" 
+            onClick={onTogglePause}
+          >
             {isPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
-          </Button>}
+          </Button>
+        )}
         
-        <Button variant="outline" size="icon" className="h-7 w-7" onClick={onUndo} disabled={!canUndo} title="Назад">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onUndo} disabled={!canUndo} title="Назад">
           <Undo2 className="h-3.5 w-3.5" />
         </Button>
         
-        <Button variant="outline" size="icon" className="h-7 w-7" onClick={onRedo} disabled={!canRedo} title="Напред">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onRedo} disabled={!canRedo} title="Напред">
           <Redo2 className="h-3.5 w-3.5" />
         </Button>
         
-        <Button variant="outline" size="icon" className="h-7 w-7" onClick={onReset} title="Нова игра">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onReset} title="Нова игра">
           <RotateCcw className="h-3.5 w-3.5" />
         </Button>
 
-        {/* Save/Load buttons */}
         {onSave && (
-          <Button variant="outline" size="icon" className="h-7 w-7" onClick={handleSave} disabled={isAIThinking} title="Запази">
+          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleSave} disabled={isAIThinking} title="Запази">
             <Save className="h-3.5 w-3.5" />
           </Button>
         )}
         
         {onLoad && hasSavedGame && (
-          <Button variant="outline" size="icon" className="h-7 w-7" onClick={handleLoad} disabled={isAIThinking} title="Зареди">
+          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleLoad} disabled={isAIThinking} title="Зареди">
             <FolderOpen className="h-3.5 w-3.5" />
           </Button>
         )}
         
-        <Button variant="outline" size="icon" className="h-7 w-7" onClick={onToggleSound} title={soundEnabled ? "Изключи звук" : "Включи звук"}>
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onToggleSound} title={soundEnabled ? "Изключи звук" : "Включи звук"}>
           {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
         </Button>
         
-        <Button variant="outline" size="icon" className="h-7 w-7" onClick={onChangeMode} disabled={isAIThinking} title="Меню">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onChangeMode} disabled={isAIThinking} title="Меню">
           <ArrowLeft className="h-3.5 w-3.5" />
         </Button>
         
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="icon" className="h-7 w-7" title="Правила">
+            <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" title="Правила">
               <HelpCircle className="h-3.5 w-3.5" />
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto glass border-border">
             <DialogHeader>
-              <DialogTitle className="text-xl">📜 Правила на играта</DialogTitle>
+              <DialogTitle className="text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Правила на играта
+              </DialogTitle>
               <DialogDescription asChild>
                 <div className="space-y-3 text-left text-sm">
                   <section>
@@ -188,7 +212,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
                   </section>
                   <section>
                     <h4 className="font-semibold text-foreground mb-0.5">⌨️ Клавиши</h4>
-                    <p><kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+Z</kbd> Назад · <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+Y</kbd> Напред</p>
+                    <p><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs border border-border">Ctrl+Z</kbd> Назад · <kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs border border-border">Ctrl+Y</kbd> Напред</p>
                   </section>
                 </div>
               </DialogDescription>
@@ -196,5 +220,6 @@ export const GameControls: React.FC<GameControlsProps> = ({
           </DialogContent>
         </Dialog>
       </div>
-    </div>;
+    </div>
+  );
 };

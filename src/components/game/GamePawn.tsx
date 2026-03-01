@@ -73,7 +73,7 @@ export const GamePawn: React.FC<GamePawnProps> = ({
     gradientId = color === 'blue' ? 'neutralizedBlueGradient' : 'neutralizedRedGradient';
   }
 
-  const textColor = color === 'blue' && !isNeutralized ? 'white' : 'black';
+  const textColor = 'white';
 
   return (
     <g 
@@ -91,11 +91,9 @@ export const GamePawn: React.FC<GamePawnProps> = ({
         cy={0}
         r={radius}
         fill={`url(#${gradientId})`}
-        className={`
-          transition-all duration-200
-          ${isSelected ? 'stroke-[hsl(var(--hex-selected))]' : 'stroke-[hsl(var(--primary)/0.5)]'}
-        `}
-        strokeWidth={isSelected ? 3 : 1.5}
+        className="transition-all duration-200"
+        stroke={isSelected ? 'hsl(45, 95%, 55%)' : 'hsl(225, 15%, 30%)'}
+        strokeWidth={isSelected ? 2.5 : 1}
       />
       
       {/* Highlight effect */}

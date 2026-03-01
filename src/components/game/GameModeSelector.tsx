@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Users, Bot, Zap, Brain, Sparkles, Eye } from 'lucide-react';
+import { Users, Bot, Zap, Brain, Sparkles, Eye, ChevronRight } from 'lucide-react';
 import type { AIDifficulty } from '@/lib/gameAI';
 import type { PlayerColor } from '@/lib/hexUtils';
 
@@ -31,175 +30,154 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl flex items-center justify-center gap-2">
-            🎮 Избери режим
-          </CardTitle>
-          <CardDescription>
-            Играй локално с приятел или срещу AI противник
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 -left-32 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-32 w-64 h-64 bg-accent/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
+      </div>
+
+      <div className="w-full max-w-lg relative z-10 animate-slide-up">
+        {/* Title */}
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground mb-1">
+            <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              RicochetHex
+            </span>
+          </h1>
+          <p className="text-sm text-muted-foreground">Шестоъгълен стратегически шах</p>
+        </div>
+
+        {/* Main card */}
+        <div className="glass rounded-2xl p-6 space-y-5 shadow-xl">
           {/* Mode Selection */}
-          <RadioGroup
-            value={selectedMode}
-            onValueChange={(value) => setSelectedMode(value as GameMode)}
-            className="grid grid-cols-3 gap-3"
-          >
-            {/* Local Multiplayer */}
-            <div>
-              <RadioGroupItem
-                value="local"
-                id="local"
-                className="peer sr-only"
-              />
-              <Label
-                htmlFor="local"
-                className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
-              >
-                <Users className="mb-2 h-6 w-6 text-primary" />
-                <span className="text-sm font-medium">Локален</span>
-                <span className="text-xs text-muted-foreground">2 играчи</span>
-              </Label>
-            </div>
-
-            {/* VS AI */}
-            <div>
-              <RadioGroupItem
-                value="vs-ai"
-                id="vs-ai"
-                className="peer sr-only"
-              />
-              <Label
-                htmlFor="vs-ai"
-                className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
-              >
-                <Bot className="mb-2 h-6 w-6 text-destructive" />
-                <span className="text-sm font-medium">Срещу AI</span>
-                <span className="text-xs text-muted-foreground">1 играч</span>
-              </Label>
-            </div>
-
-            {/* AI vs AI */}
-            <div>
-              <RadioGroupItem
-                value="ai-vs-ai"
-                id="ai-vs-ai"
-                className="peer sr-only"
-              />
-              <Label
-                htmlFor="ai-vs-ai"
-                className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
-              >
-                <Eye className="mb-2 h-6 w-6 text-chart-5" />
-                <span className="text-sm font-medium">AI vs AI</span>
-                <span className="text-xs text-muted-foreground">Наблюдение</span>
-              </Label>
-            </div>
-          </RadioGroup>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3 block">
+              Режим на игра
+            </label>
+            <RadioGroup
+              value={selectedMode}
+              onValueChange={(value) => setSelectedMode(value as GameMode)}
+              className="grid grid-cols-3 gap-2"
+            >
+              {[
+                { value: 'local' as GameMode, icon: Users, label: 'Локален', sub: '2 играчи' },
+                { value: 'vs-ai' as GameMode, icon: Bot, label: 'Срещу AI', sub: '1 играч' },
+                { value: 'ai-vs-ai' as GameMode, icon: Eye, label: 'AI vs AI', sub: 'Наблюдение' },
+              ].map(({ value, icon: Icon, label, sub }) => (
+                <div key={value}>
+                  <RadioGroupItem value={value} id={value} className="peer sr-only" />
+                  <Label
+                    htmlFor={value}
+                    className={`
+                      flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border 
+                      bg-secondary/50 p-3 cursor-pointer transition-all duration-200
+                      hover:bg-secondary hover:border-primary/30
+                      peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 
+                      peer-data-[state=checked]:shadow-glow-cyan
+                      [&:has([data-state=checked])]:border-primary
+                    `}
+                  >
+                    <Icon className="h-5 w-5 text-primary" />
+                    <span className="text-xs font-semibold text-foreground">{label}</span>
+                    <span className="text-[10px] text-muted-foreground">{sub}</span>
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
 
           {/* VS AI Options */}
           {selectedMode === 'vs-ai' && (
-            <div className="space-y-5 animate-fade-in">
-              {/* Difficulty Selection */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Трудност на AI:</Label>
+            <div className="space-y-4 animate-slide-up">
+              {/* Difficulty */}
+              <div>
+                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2 block">
+                  Трудност на AI
+                </label>
                 <RadioGroup
                   value={difficulty}
                   onValueChange={(value) => setDifficulty(value as AIDifficulty)}
-                  className="grid grid-cols-3 gap-3"
+                  className="grid grid-cols-3 gap-2"
                 >
-                  <div>
-                    <RadioGroupItem
-                      value="easy"
-                      id="easy"
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor="easy"
-                      className="flex items-center justify-center gap-2 rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
-                    >
-                      <Zap className="h-4 w-4 text-chart-4" />
-                      <span className="font-medium">Лесно</span>
-                    </Label>
-                  </div>
-                  <div>
-                    <RadioGroupItem
-                      value="medium"
-                      id="medium"
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor="medium"
-                      className="flex items-center justify-center gap-2 rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
-                    >
-                      <Brain className="h-4 w-4 text-chart-5" />
-                      <span className="font-medium">Средно</span>
-                    </Label>
-                  </div>
-                  <div>
-                    <RadioGroupItem
-                      value="hard"
-                      id="hard"
-                      className="peer sr-only"
-                    />
-                    <Label
-                      htmlFor="hard"
-                      className="flex items-center justify-center gap-2 rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
-                    >
-                      <Sparkles className="h-4 w-4 text-destructive" />
-                      <span className="font-medium">Трудно</span>
-                    </Label>
-                  </div>
+                  {[
+                    { value: 'easy' as AIDifficulty, icon: Zap, label: 'Лесно', color: 'text-emerald-400' },
+                    { value: 'medium' as AIDifficulty, icon: Brain, label: 'Средно', color: 'text-amber-400' },
+                    { value: 'hard' as AIDifficulty, icon: Sparkles, label: 'Трудно', color: 'text-red-400' },
+                  ].map(({ value, icon: Icon, label, color }) => (
+                    <div key={value}>
+                      <RadioGroupItem value={value} id={value} className="peer sr-only" />
+                      <Label
+                        htmlFor={value}
+                        className={`
+                          flex items-center justify-center gap-1.5 rounded-lg border border-border
+                          bg-secondary/30 p-2.5 cursor-pointer transition-all duration-200
+                          hover:bg-secondary/60 hover:border-primary/20
+                          peer-data-[state=checked]:border-primary/50 peer-data-[state=checked]:bg-primary/10
+                          [&:has([data-state=checked])]:border-primary/50
+                        `}
+                      >
+                        <Icon className={`h-3.5 w-3.5 ${color}`} />
+                        <span className="text-xs font-medium">{label}</span>
+                      </Label>
+                    </div>
+                  ))}
                 </RadioGroup>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
                   {difficulty === 'easy' 
-                    ? '🎲 AI избира случайни валидни ходове'
+                    ? 'AI избира случайни ходове'
                     : difficulty === 'medium'
-                    ? '🧠 AI оценява и избира стратегически най-добрите ходове'
-                    : '♟️ AI използва minimax алгоритъм за оптимална игра'
+                    ? 'AI оценява стратегически'
+                    : 'AI използва minimax алгоритъм'
                   }
                 </p>
               </div>
 
-              {/* Player Color Selection */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Твоят цвят:</Label>
+              {/* Player Color */}
+              <div>
+                <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2 block">
+                  Твоят цвят
+                </label>
                 <RadioGroup
                   value={playerColor}
                   onValueChange={(value) => setPlayerColor(value as PlayerColor)}
-                  className="grid grid-cols-2 gap-3"
+                  className="grid grid-cols-2 gap-2"
                 >
                   <div>
-                    <RadioGroupItem
-                      value="blue"
-                      id="blue"
-                      className="peer sr-only"
-                    />
+                    <RadioGroupItem value="blue" id="blue" className="peer sr-only" />
                     <Label
                       htmlFor="blue"
-                      className="flex flex-col items-center justify-center gap-2 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-500/10 [&:has([data-state=checked])]:border-blue-500 cursor-pointer transition-all"
+                      className={`
+                        flex flex-col items-center justify-center gap-1 rounded-xl border border-border
+                        bg-secondary/30 p-3 cursor-pointer transition-all duration-200
+                        hover:bg-glow-blue/10 hover:border-glow-blue/30
+                        peer-data-[state=checked]:border-glow-blue/60 peer-data-[state=checked]:bg-glow-blue/15 
+                        peer-data-[state=checked]:shadow-[0_0_15px_hsl(210_85%_55%/0.2)]
+                        [&:has([data-state=checked])]:border-glow-blue/60
+                      `}
                     >
-                      <span className="text-2xl">🔵</span>
-                      <span className="font-medium">Сините</span>
-                      <span className="text-xs text-muted-foreground">Първи ход</span>
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg" />
+                      <span className="text-xs font-semibold">Сините</span>
+                      <span className="text-[10px] text-muted-foreground">Първи ход</span>
                     </Label>
                   </div>
                   <div>
-                    <RadioGroupItem
-                      value="red"
-                      id="red"
-                      className="peer sr-only"
-                    />
+                    <RadioGroupItem value="red" id="red" className="peer sr-only" />
                     <Label
                       htmlFor="red"
-                      className="flex flex-col items-center justify-center gap-2 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-red-500 peer-data-[state=checked]:bg-red-500/10 [&:has([data-state=checked])]:border-red-500 cursor-pointer transition-all"
+                      className={`
+                        flex flex-col items-center justify-center gap-1 rounded-xl border border-border
+                        bg-secondary/30 p-3 cursor-pointer transition-all duration-200
+                        hover:bg-glow-red/10 hover:border-glow-red/30
+                        peer-data-[state=checked]:border-glow-red/60 peer-data-[state=checked]:bg-glow-red/15
+                        peer-data-[state=checked]:shadow-[0_0_15px_hsl(355_80%_58%/0.2)]
+                        [&:has([data-state=checked])]:border-glow-red/60
+                      `}
                     >
-                      <span className="text-2xl">🔴</span>
-                      <span className="font-medium">Червените</span>
-                      <span className="text-xs text-muted-foreground">Втори ход</span>
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-lg" />
+                      <span className="text-xs font-semibold">Червените</span>
+                      <span className="text-[10px] text-muted-foreground">Втори ход</span>
                     </Label>
                   </div>
                 </RadioGroup>
@@ -209,13 +187,13 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
 
           {/* AI vs AI Options */}
           {selectedMode === 'ai-vs-ai' && (
-            <div className="space-y-4 animate-fade-in">
-              <div className="grid grid-cols-2 gap-4">
-                {/* Blue AI Difficulty */}
+            <div className="space-y-3 animate-slide-up">
+              <div className="grid grid-cols-2 gap-3">
+                {/* Blue AI */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-1">
-                    🔵 Сини AI:
-                  </Label>
+                  <label className="text-[10px] font-medium uppercase tracking-wider text-glow-blue flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-glow-blue" /> Сини AI
+                  </label>
                   <RadioGroup
                     value={blueDifficulty}
                     onValueChange={(value) => setBlueDifficulty(value as AIDifficulty)}
@@ -228,8 +206,8 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                     ].map(({ value, label, icon: Icon }) => (
                       <div key={value} className="flex items-center space-x-2">
                         <RadioGroupItem value={value} id={`blue-${value}`} />
-                        <Label htmlFor={`blue-${value}`} className="flex items-center gap-1 cursor-pointer">
-                          <Icon className="h-3 w-3" />
+                        <Label htmlFor={`blue-${value}`} className="flex items-center gap-1 cursor-pointer text-xs">
+                          <Icon className="h-3 w-3 text-muted-foreground" />
                           {label}
                         </Label>
                       </div>
@@ -237,11 +215,11 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                   </RadioGroup>
                 </div>
 
-                {/* Red AI Difficulty */}
+                {/* Red AI */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium flex items-center gap-1">
-                    🔴 Червени AI:
-                  </Label>
+                  <label className="text-[10px] font-medium uppercase tracking-wider text-glow-red flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-glow-red" /> Червени AI
+                  </label>
                   <RadioGroup
                     value={redDifficulty}
                     onValueChange={(value) => setRedDifficulty(value as AIDifficulty)}
@@ -254,8 +232,8 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                     ].map(({ value, label, icon: Icon }) => (
                       <div key={value} className="flex items-center space-x-2">
                         <RadioGroupItem value={value} id={`red-${value}`} />
-                        <Label htmlFor={`red-${value}`} className="flex items-center gap-1 cursor-pointer">
-                          <Icon className="h-3 w-3" />
+                        <Label htmlFor={`red-${value}`} className="flex items-center gap-1 cursor-pointer text-xs">
+                          <Icon className="h-3 w-3 text-muted-foreground" />
                           {label}
                         </Label>
                       </div>
@@ -263,8 +241,8 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                   </RadioGroup>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground text-center">
-                👀 Наблюдавай как две AI се състезават!
+              <p className="text-[10px] text-muted-foreground text-center">
+                Наблюдавай как две AI се състезават
               </p>
             </div>
           )}
@@ -272,28 +250,28 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
           {/* Start Button */}
           <Button 
             onClick={handleStart} 
-            className="w-full text-lg py-6"
+            className="w-full text-sm font-semibold py-5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-glow-cyan transition-all duration-300 rounded-xl group"
             size="lg"
           >
-            🚀 Започни игра
+            Започни игра
+            <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Button>
 
           {/* Game Info */}
-          <div className="text-xs text-muted-foreground text-center space-y-1">
-            <p>🔵 Сините започват първи</p>
+          <div className="text-[10px] text-muted-foreground text-center space-y-0.5">
+            <p className="flex items-center justify-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-glow-blue inline-block" /> Сините започват първи
+            </p>
             {selectedMode === 'vs-ai' && (
               <p>
                 {playerColor === 'blue' 
-                  ? '🤖 AI играе с червените' 
-                  : '🤖 AI играе със сините (първи ход)'}
+                  ? 'AI играе с червените' 
+                  : 'AI играе със сините (първи ход)'}
               </p>
             )}
-            {selectedMode === 'ai-vs-ai' && (
-              <p>🤖 И двата отбора се контролират от AI</p>
-            )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
