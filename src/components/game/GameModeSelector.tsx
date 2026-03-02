@@ -46,7 +46,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
               RicochetHex
             </span>
           </h1>
-          <p className="text-sm text-muted-foreground">Шестоъгълен стратегически шах</p>
+          <p className="text-sm text-muted-foreground">Hexagonal strategic chess</p>
         </div>
 
         {/* Main card */}
@@ -54,7 +54,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
           {/* Mode Selection */}
           <div>
             <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-3 block">
-              Режим на игра
+              Game Mode
             </label>
             <RadioGroup
               value={selectedMode}
@@ -62,9 +62,9 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
               className="grid grid-cols-3 gap-2"
             >
               {[
-                { value: 'local' as GameMode, icon: Users, label: 'Локален', sub: '2 играчи' },
-                { value: 'vs-ai' as GameMode, icon: Bot, label: 'Срещу AI', sub: '1 играч' },
-                { value: 'ai-vs-ai' as GameMode, icon: Eye, label: 'AI vs AI', sub: 'Наблюдение' },
+                { value: 'local' as GameMode, icon: Users, label: 'Local', sub: '2 players' },
+                { value: 'vs-ai' as GameMode, icon: Bot, label: 'vs AI', sub: '1 player' },
+                { value: 'ai-vs-ai' as GameMode, icon: Eye, label: 'AI vs AI', sub: 'Spectate' },
               ].map(({ value, icon: Icon, label, sub }) => (
                 <div key={value}>
                   <RadioGroupItem value={value} id={value} className="peer sr-only" />
@@ -94,7 +94,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
               {/* Difficulty */}
               <div>
                 <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2 block">
-                  Трудност на AI
+                  AI Difficulty
                 </label>
                 <RadioGroup
                   value={difficulty}
@@ -102,9 +102,9 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                   className="grid grid-cols-3 gap-2"
                 >
                   {[
-                    { value: 'easy' as AIDifficulty, icon: Zap, label: 'Лесно', color: 'text-emerald-400' },
-                    { value: 'medium' as AIDifficulty, icon: Brain, label: 'Средно', color: 'text-amber-400' },
-                    { value: 'hard' as AIDifficulty, icon: Sparkles, label: 'Трудно', color: 'text-red-400' },
+                    { value: 'easy' as AIDifficulty, icon: Zap, label: 'Easy', color: 'text-emerald-400' },
+                    { value: 'medium' as AIDifficulty, icon: Brain, label: 'Medium', color: 'text-amber-400' },
+                    { value: 'hard' as AIDifficulty, icon: Sparkles, label: 'Hard', color: 'text-red-400' },
                   ].map(({ value, icon: Icon, label, color }) => (
                     <div key={value}>
                       <RadioGroupItem value={value} id={value} className="peer sr-only" />
@@ -126,10 +126,10 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                 </RadioGroup>
                 <p className="text-[10px] text-muted-foreground mt-1.5 text-center">
                   {difficulty === 'easy' 
-                    ? 'AI избира случайни ходове'
+                    ? 'AI picks random moves'
                     : difficulty === 'medium'
-                    ? 'AI оценява стратегически'
-                    : 'AI използва minimax алгоритъм'
+                    ? 'AI evaluates strategically'
+                    : 'AI uses minimax algorithm'
                   }
                 </p>
               </div>
@@ -137,7 +137,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
               {/* Player Color */}
               <div>
                 <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2 block">
-                  Твоят цвят
+                  Your Color
                 </label>
                 <RadioGroup
                   value={playerColor}
@@ -158,8 +158,8 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                       `}
                     >
                       <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg" />
-                      <span className="text-xs font-semibold">Сините</span>
-                      <span className="text-[10px] text-muted-foreground">Първи ход</span>
+                       <span className="text-xs font-semibold">Blue</span>
+                       <span className="text-[10px] text-muted-foreground">First move</span>
                     </Label>
                   </div>
                   <div>
@@ -176,8 +176,8 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                       `}
                     >
                       <div className="w-6 h-6 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-lg" />
-                      <span className="text-xs font-semibold">Червените</span>
-                      <span className="text-[10px] text-muted-foreground">Втори ход</span>
+                       <span className="text-xs font-semibold">Red</span>
+                       <span className="text-[10px] text-muted-foreground">Second move</span>
                     </Label>
                   </div>
                 </RadioGroup>
@@ -191,8 +191,8 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
               <div className="grid grid-cols-2 gap-3">
                 {/* Blue AI */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-medium uppercase tracking-wider text-glow-blue flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-glow-blue" /> Сини AI
+                   <label className="text-[10px] font-medium uppercase tracking-wider text-glow-blue flex items-center gap-1">
+                     <div className="w-2 h-2 rounded-full bg-glow-blue" /> Blue AI
                   </label>
                   <RadioGroup
                     value={blueDifficulty}
@@ -200,9 +200,9 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                     className="space-y-1"
                   >
                     {[
-                      { value: 'easy' as AIDifficulty, label: 'Лесно', icon: Zap },
-                      { value: 'medium' as AIDifficulty, label: 'Средно', icon: Brain },
-                      { value: 'hard' as AIDifficulty, label: 'Трудно', icon: Sparkles }
+                       { value: 'easy' as AIDifficulty, label: 'Easy', icon: Zap },
+                       { value: 'medium' as AIDifficulty, label: 'Medium', icon: Brain },
+                       { value: 'hard' as AIDifficulty, label: 'Hard', icon: Sparkles }
                     ].map(({ value, label, icon: Icon }) => (
                       <div key={value} className="flex items-center space-x-2">
                         <RadioGroupItem value={value} id={`blue-${value}`} />
@@ -217,8 +217,8 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
 
                 {/* Red AI */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-medium uppercase tracking-wider text-glow-red flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-glow-red" /> Червени AI
+                   <label className="text-[10px] font-medium uppercase tracking-wider text-glow-red flex items-center gap-1">
+                     <div className="w-2 h-2 rounded-full bg-glow-red" /> Red AI
                   </label>
                   <RadioGroup
                     value={redDifficulty}
@@ -226,9 +226,9 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                     className="space-y-1"
                   >
                     {[
-                      { value: 'easy' as AIDifficulty, label: 'Лесно', icon: Zap },
-                      { value: 'medium' as AIDifficulty, label: 'Средно', icon: Brain },
-                      { value: 'hard' as AIDifficulty, label: 'Трудно', icon: Sparkles }
+                       { value: 'easy' as AIDifficulty, label: 'Easy', icon: Zap },
+                       { value: 'medium' as AIDifficulty, label: 'Medium', icon: Brain },
+                       { value: 'hard' as AIDifficulty, label: 'Hard', icon: Sparkles }
                     ].map(({ value, label, icon: Icon }) => (
                       <div key={value} className="flex items-center space-x-2">
                         <RadioGroupItem value={value} id={`red-${value}`} />
@@ -241,9 +241,9 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                   </RadioGroup>
                 </div>
               </div>
-              <p className="text-[10px] text-muted-foreground text-center">
-                Наблюдавай как две AI се състезават
-              </p>
+               <p className="text-[10px] text-muted-foreground text-center">
+                 Watch two AIs compete against each other
+               </p>
             </div>
           )}
 
@@ -253,21 +253,21 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
             className="w-full text-sm font-semibold py-5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-glow-cyan transition-all duration-300 rounded-xl group"
             size="lg"
           >
-            Започни игра
+            Start Game
             <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Button>
 
           {/* Game Info */}
           <div className="text-[10px] text-muted-foreground text-center space-y-0.5">
             <p className="flex items-center justify-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-glow-blue inline-block" /> Сините започват първи
-            </p>
-            {selectedMode === 'vs-ai' && (
-              <p>
-                {playerColor === 'blue' 
-                  ? 'AI играе с червените' 
-                  : 'AI играе със сините (първи ход)'}
-              </p>
+               <span className="w-1.5 h-1.5 rounded-full bg-glow-blue inline-block" /> Blue moves first
+             </p>
+             {selectedMode === 'vs-ai' && (
+               <p>
+                 {playerColor === 'blue' 
+                   ? 'AI plays as Red' 
+                   : 'AI plays as Blue (first move)'}
+               </p>
             )}
           </div>
         </div>

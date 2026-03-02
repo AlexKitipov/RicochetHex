@@ -9,9 +9,9 @@ import type { PlayerColor } from '@/lib/hexUtils';
 type GameMode = 'local' | 'vs-ai' | 'ai-vs-ai';
 
 const difficultyLabels: Record<AIDifficulty, string> = {
-  easy: 'Лесно',
-  medium: 'Средно',
-  hard: 'Трудно'
+  easy: 'Easy',
+  medium: 'Medium',
+  hard: 'Hard'
 };
 
 interface GameControlsProps {
@@ -69,9 +69,9 @@ export const GameControls: React.FC<GameControlsProps> = ({
     if (onSave) {
       const success = onSave();
       if (success) {
-        toast.success('Играта е запазена!');
+        toast.success('Game saved!');
       } else {
-        toast.error('Грешка при запазване');
+        toast.error('Failed to save game');
       }
     }
   };
@@ -79,7 +79,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
   const handleLoad = () => {
     if (onLoad) {
       onLoad();
-      toast.success('Играта е заредена!');
+      toast.success('Game loaded!');
     }
   };
 
@@ -103,7 +103,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
               vs AI ({difficultyLabels[aiDifficulty]})
             </> : <>
               <Users className="h-2.5 w-2.5" />
-              Локален
+              Local
             </>}
         </div>
       
@@ -115,7 +115,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
               ? 'bg-glow-blue/15 text-glow-blue border border-glow-blue/30 shadow-[0_0_10px_hsl(210_85%_55%/0.2)]' 
               : 'bg-glow-red/15 text-glow-red border border-glow-red/30 shadow-[0_0_10px_hsl(355_80%_58%/0.2)]'}
           `}>
-            🏆 {winner === 'blue' ? 'Сините' : 'Червените'} печелят!
+            🏆 {winner === 'blue' ? 'Blue' : 'Red'} wins!
           </div>
         ) : (
           <div className={`
@@ -126,13 +126,13 @@ export const GameControls: React.FC<GameControlsProps> = ({
           `}>
             {isAIThinking ? <>
                 <Loader2 className="h-3 w-3 animate-spin" />
-                AI мисли...
+                AI thinking...
               </> : isPaused && gameMode === 'ai-vs-ai' ? <>
                 <div className={`w-2 h-2 rounded-full ${currentPlayer === 'blue' ? 'bg-glow-blue' : 'bg-glow-red'}`} />
-                Пауза
+                Paused
               </> : <>
                 <div className={`w-2 h-2 rounded-full ${currentPlayer === 'blue' ? 'bg-glow-blue' : 'bg-glow-red'} animate-glow-pulse`} />
-                Ход: {currentPlayer === 'blue' ? 'Сини' : 'Червени'}
+                Turn: {currentPlayer === 'blue' ? 'Blue' : 'Red'}
                 {gameMode === 'vs-ai' && currentPlayer === aiColor && ' (AI)'}
                 {gameMode === 'ai-vs-ai' && ' (AI)'}
               </>}
@@ -153,66 +153,66 @@ export const GameControls: React.FC<GameControlsProps> = ({
           </Button>
         )}
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onUndo} disabled={!canUndo} title="Назад">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onUndo} disabled={!canUndo} title="Undo">
           <Undo2 className="h-3.5 w-3.5" />
         </Button>
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onRedo} disabled={!canRedo} title="Напред">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onRedo} disabled={!canRedo} title="Redo">
           <Redo2 className="h-3.5 w-3.5" />
         </Button>
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onReset} title="Нова игра">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onReset} title="New Game">
           <RotateCcw className="h-3.5 w-3.5" />
         </Button>
 
         {onSave && (
-          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleSave} disabled={isAIThinking} title="Запази">
+          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleSave} disabled={isAIThinking} title="Save">
             <Save className="h-3.5 w-3.5" />
           </Button>
         )}
         
         {onLoad && hasSavedGame && (
-          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleLoad} disabled={isAIThinking} title="Зареди">
+          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleLoad} disabled={isAIThinking} title="Load">
             <FolderOpen className="h-3.5 w-3.5" />
           </Button>
         )}
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onToggleSound} title={soundEnabled ? "Изключи звук" : "Включи звук"}>
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onToggleSound} title={soundEnabled ? "Mute" : "Unmute"}>
           {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
         </Button>
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onChangeMode} disabled={isAIThinking} title="Меню">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onChangeMode} disabled={isAIThinking} title="Menu">
           <ArrowLeft className="h-3.5 w-3.5" />
         </Button>
         
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" title="Правила">
+            <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" title="Rules">
               <HelpCircle className="h-3.5 w-3.5" />
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto glass border-border">
             <DialogHeader>
               <DialogTitle className="text-xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Правила на играта
+                Game Rules
               </DialogTitle>
               <DialogDescription asChild>
                 <div className="space-y-3 text-left text-sm">
                   <section>
-                    <h4 className="font-semibold text-foreground mb-0.5">🎯 Цел</h4>
-                    <p>Докарайте 3+ активни пешки до задния ред на противника.</p>
+                    <h4 className="font-semibold text-foreground mb-0.5">🎯 Objective</h4>
+                    <p>Move 3+ active pawns to the opponent's back row to win.</p>
                   </section>
                   <section>
-                    <h4 className="font-semibold text-foreground mb-0.5">♟️ Движение</h4>
-                    <p>Пешките се движат по права линия в 6 посоки до пешка или ръб (рикошет).</p>
+                    <h4 className="font-semibold text-foreground mb-0.5">♟️ Movement</h4>
+                    <p>Pawns slide in a straight line (6 directions) until hitting another pawn or the board edge (ricochet).</p>
                   </section>
                   <section>
-                    <h4 className="font-semibold text-foreground mb-0.5">✕ Неутрализация</h4>
-                    <p>Пешка захваната между две ваши в права линия се неутрализира.</p>
+                    <h4 className="font-semibold text-foreground mb-0.5">✕ Neutralization</h4>
+                    <p>A pawn trapped between two of yours in a straight line becomes neutralized.</p>
                   </section>
                   <section>
-                    <h4 className="font-semibold text-foreground mb-0.5">⌨️ Клавиши</h4>
-                    <p><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs border border-border">Ctrl+Z</kbd> Назад · <kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs border border-border">Ctrl+Y</kbd> Напред</p>
+                    <h4 className="font-semibold text-foreground mb-0.5">⌨️ Shortcuts</h4>
+                    <p><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs border border-border">Ctrl+Z</kbd> Undo · <kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs border border-border">Ctrl+Y</kbd> Redo</p>
                   </section>
                 </div>
               </DialogDescription>
