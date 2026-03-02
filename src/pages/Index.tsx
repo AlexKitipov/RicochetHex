@@ -86,7 +86,7 @@ const Index = () => {
               RicochetHex
             </span>
             <span className="font-normal text-muted-foreground text-xs hidden sm:inline ml-2">
-              Шестоъгълен стратегически шах
+              Hexagonal Strategic Chess
             </span>
           </h1>
         </div>
@@ -98,7 +98,7 @@ const Index = () => {
           <div className="flex items-center justify-center h-full">
             <div className="flex flex-col items-center gap-2">
               <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs text-muted-foreground">Зареждане...</span>
+              <span className="text-xs text-muted-foreground">Loading...</span>
             </div>
           </div>
         }>

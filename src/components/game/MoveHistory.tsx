@@ -38,14 +38,14 @@ export const MoveHistory: React.FC<MoveHistoryProps> = ({ moves, currentIndex })
       <div className="px-3 py-2 border-b border-border/50">
         <h3 className="font-semibold text-xs text-foreground flex items-center gap-1.5 uppercase tracking-wider">
           <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-          История
+          History
         </h3>
       </div>
       
       <ScrollArea className="flex-1">
         {moves.length === 0 ? (
           <div className="p-4 text-center text-muted-foreground text-xs">
-            Няма направени ходове
+            No moves yet
           </div>
         ) : (
           <div className="p-1.5">
@@ -75,10 +75,10 @@ export const MoveHistory: React.FC<MoveHistoryProps> = ({ moves, currentIndex })
       
       <div className="px-3 py-1.5 border-t border-border/50 text-[9px] text-muted-foreground">
         <div className="flex gap-2 flex-wrap">
-          <span>⟲ Рикошет</span>
-          <span>⊘ Неутр.</span>
-          <span>↺ Възст.</span>
-          <span>✕ Захв.</span>
+          <span>⟲ Ricochet</span>
+          <span>⊘ Neutr.</span>
+          <span>↺ Recov.</span>
+          <span>✕ Capt.</span>
         </div>
       </div>
     </div>
