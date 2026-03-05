@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Users, Bot, Zap, Brain, Sparkles, Eye, ChevronRight } from 'lucide-react';
+import { Users, Bot, Zap, Brain, Sparkles, Eye, ChevronRight, Globe } from 'lucide-react';
 import type { AIDifficulty } from '@/lib/gameAI';
 import type { PlayerColor } from '@/lib/hexUtils';
 
@@ -19,6 +20,7 @@ interface GameModeSelectorProps {
 }
 
 export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) => {
+  const navigate = useNavigate();
   const [selectedMode, setSelectedMode] = useState<GameMode>('local');
   const [difficulty, setDifficulty] = useState<AIDifficulty>('medium');
   const [playerColor, setPlayerColor] = useState<PlayerColor>('blue');
@@ -269,6 +271,22 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                    : 'AI plays as Blue (first move)'}
                </p>
             )}
+          </div>
+
+          {/* Online Multiplayer Button */}
+          <div className="pt-2 border-t border-border">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/auth')}
+              className="w-full text-sm rounded-xl group border-primary/30 hover:border-primary/60 hover:bg-primary/5"
+            >
+              <Globe className="mr-2 h-4 w-4 text-primary" />
+              Онлайн Мултиплейър
+              <ChevronRight className="ml-auto h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Button>
+            <p className="text-[10px] text-muted-foreground text-center mt-1">
+              Играй с приятели онлайн в реално време
+            </p>
           </div>
         </div>
       </div>
