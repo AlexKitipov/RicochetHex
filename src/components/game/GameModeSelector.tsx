@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Users, Bot, Zap, Brain, Sparkles, Eye, ChevronRight } from 'lucide-react';
+import { Users, Bot, Zap, Brain, Sparkles, Eye, ChevronRight, Globe } from 'lucide-react';
 import type { AIDifficulty } from '@/lib/gameAI';
 import type { PlayerColor } from '@/lib/hexUtils';
 
