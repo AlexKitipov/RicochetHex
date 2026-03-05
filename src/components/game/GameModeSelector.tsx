@@ -20,6 +20,7 @@ interface GameModeSelectorProps {
 }
 
 export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) => {
+  const navigate = useNavigate();
   const [selectedMode, setSelectedMode] = useState<GameMode>('local');
   const [difficulty, setDifficulty] = useState<AIDifficulty>('medium');
   const [playerColor, setPlayerColor] = useState<PlayerColor>('blue');
