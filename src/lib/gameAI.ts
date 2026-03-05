@@ -321,6 +321,30 @@ export function getBestMove(
   return bestMove;
 }
 
+// Cheap move ordering heuristic for inside minimax (avoids expensive evaluateMove)
+function cheapMoveScore(
+  from: HexCoord,
+  to: HexCoord,
+  pawns: Map<string, Pawn>,
+  player: PlayerColor
+): number {
+  let score = 0;
+  const targetRank = player === 'blue' ? -(SIDE_LENGTH - 1) : (SIDE_LENGTH - 1);
+  
+  // Bonus for reaching target rank
+  if (to.r === targetRank) score += 50;
+  
+  // Forward progress
+  const forward = player === 'blue' ? from.r - to.r : to.r - from.r;
+  if (forward > 0) score += forward * 10;
+  
+  // Bonus for landing on opponent (capture potential)
+  const targetPawn = pawns.get(hexKey(to));
+  if (targetPawn && targetPawn.color !== player) score += 40;
+  
+  return score;
+}
+
 // Minimax with alpha-beta pruning and transposition table
 function minimax(
   pawns: Map<string, Pawn>,
@@ -387,11 +411,11 @@ function minimax(
     return evalScore;
   }
   
-  // SHERIFF FIX: Move ordering inside minimax for better alpha-beta pruning
+  // Use cheap heuristic for move ordering (not full evaluateMove which is too expensive)
   const orderedMoves = moves
     .map(m => ({
       ...m,
-      score: evaluateMove(m.from, m.to, pawns, currentPlayer),
+      score: cheapMoveScore(m.from, m.to, pawns, currentPlayer),
     }))
     .sort((a, b) => (maximizingPlayer ? (b.score ?? 0) - (a.score ?? 0) : (a.score ?? 0) - (b.score ?? 0)));
   
@@ -436,7 +460,7 @@ export function clearTranspositionTable(): void {
 export function getMinimaxMove(
   pawns: Map<string, Pawn>,
   player: PlayerColor,
-  maxDepth: number = 3  // SHERIFF FIX: Reduced from 4 to 3
+  maxDepth: number = 3
 ): AIMove | null {
   const allMoves = getAllValidMoves(pawns, player);
   
@@ -447,10 +471,13 @@ export function getMinimaxMove(
     return null;
   }
   
-  // SHERIFF FIX: Clear transposition table at each move to avoid stale/toxic entries
+  // Clear transposition table at each move to avoid stale entries
   transpositionTable.clear();
   
-  // Move ordering: evaluate moves tactically for better alpha-beta pruning
+  // Dynamically reduce depth when there are many moves to prevent blocking
+  const effectiveMaxDepth = allMoves.length > 40 ? Math.min(maxDepth, 2) : maxDepth;
+  
+  // Move ordering at root: use full evaluateMove (only done once at root, not inside minimax)
   const orderedMoves = allMoves
     .map(move => ({
       ...move,
@@ -458,15 +485,19 @@ export function getMinimaxMove(
     }))
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
   
+  // Limit moves evaluated at root to top candidates to cap computation
+  const maxRootMoves = 20;
+  const candidateMoves = orderedMoves.slice(0, maxRootMoves);
+  
   let bestMove: AIMove | null = null;
   let bestScore = -Infinity;
   
   // Iterative deepening - start shallow, go deeper
-  for (let depth = 2; depth <= maxDepth; depth++) {
+  for (let depth = 2; depth <= effectiveMaxDepth; depth++) {
     let depthBestMove: AIMove | null = null;
     let depthBestScore = -Infinity;
     
-    for (const move of orderedMoves) {
+    for (const move of candidateMoves) {
       const { newPawns } = simulateMove(move.from, move.to, pawns, player);
       const score = minimax(
         newPawns, 
