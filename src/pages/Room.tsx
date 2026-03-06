@@ -91,17 +91,13 @@ const Room: React.FC = () => {
   const isWaiting = room?.status === 'waiting';
   const isFinished = room?.status === 'finished';
 
-  // Multiplayer game hook (only active when playing)
-  const { gameState, selectHex } = useMultiplayerGame({
+  // Multiplayer game hook
+  const { gameState, selectHex, isMyTurn } = useMultiplayerGame({
     roomId: roomId || '',
     userId: user?.id || '',
     myColor,
-    isMyTurn: isPlaying ? gameState_currentPlayer === myColor : false,
+    isPlaying: isPlaying || false,
   });
-
-  // We need a workaround since we can't reference gameState before it's created
-  // The isMyTurn is recalculated below
-  const currentlyMyTurn = isPlaying && gameState.currentPlayer === myColor;
 
   const copyRoomCode = () => {
     if (!room) return;
