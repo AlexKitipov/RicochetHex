@@ -23,7 +23,7 @@ interface UseMultiplayerGameOptions {
   roomId: string;
   userId: string;
   myColor: PlayerColor;
-  isMyTurn: boolean;
+  isPlaying: boolean;
 }
 
 // Serialize pawns Map to JSON-safe object
@@ -42,7 +42,7 @@ function deserializePawns(obj: Record<string, Pawn>): Map<string, Pawn> {
   return map;
 }
 
-export function useMultiplayerGame({ roomId, userId, myColor, isMyTurn }: UseMultiplayerGameOptions) {
+export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMultiplayerGameOptions) {
   const { playSound } = useSoundEffects();
 
   const [gameState, setGameState] = useState<GameState>(() => ({
@@ -170,8 +170,10 @@ export function useMultiplayerGame({ roomId, userId, myColor, isMyTurn }: UseMul
     });
   }, [roomId, userId]);
 
+  const isMyTurn = isPlaying && gameState.currentPlayer === myColor;
+
   const selectHex = useCallback((hex: HexCoord) => {
-    if (!isMyTurn || gameState.gameOver) return;
+    if (!isPlaying || gameState.gameOver || gameState.currentPlayer !== myColor) return;
 
     setGameState(prev => {
       if (prev.gameOver) return prev;
@@ -259,7 +261,7 @@ export function useMultiplayerGame({ roomId, userId, myColor, isMyTurn }: UseMul
 
       return { ...prev, selectedHex: null, possibleMoves: [], ricochetPath: [] };
     });
-  }, [isMyTurn, gameState.gameOver, myColor, playSound, syncGameState, recordMove]);
+  }, [isPlaying, gameState.gameOver, gameState.currentPlayer, myColor, playSound, syncGameState, recordMove]);
 
-  return { gameState, selectHex };
+  return { gameState, selectHex, isMyTurn };
 }
