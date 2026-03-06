@@ -235,7 +235,7 @@ const Room: React.FC = () => {
                   : 'bg-gradient-to-br from-red-400 to-red-600'
               }`} />
               <span className="text-xs font-medium">
-                {currentlyMyTurn ? '🎯 Твоят ход' : '⏳ Ходът на противника...'}
+                {isMyTurn ? '🎯 Твоят ход' : '⏳ Ходът на противника...'}
               </span>
               <span className="text-[10px] text-muted-foreground">
                 (Ти си {myColor === 'blue' ? '🔵 Сини' : '🔴 Червени'})
