@@ -286,11 +286,22 @@ const Room: React.FC = () => {
       <div className="shrink-0 px-4 py-1.5 border-b border-border bg-card/40">
         <div className="container mx-auto flex items-center justify-center gap-3">
           {isFinished ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Crown className="h-4 w-4 text-yellow-500" />
               <span className="text-sm font-semibold">
                 {gameState.winner === myColor ? '🎉 Ти спечели!' : '😔 Противникът спечели'}
               </span>
+              {room.rematch_requested_by === user.id ? (
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Чакаш отговор...
+                </span>
+              ) : (
+                <Button size="sm" variant="outline" onClick={requestRematch} className="text-xs h-7 gap-1">
+                  <RotateCcw className="h-3 w-3" />
+                  {room.rematch_requested_by ? 'Приеми ремач' : 'Ремач'}
+                </Button>
+              )}
             </div>
           ) : (
             <>
