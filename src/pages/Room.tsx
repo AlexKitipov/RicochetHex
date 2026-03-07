@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Copy, Loader2, ArrowLeft, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSoundEffects } from '@/hooks/useSoundEffects';
 import type { PlayerColor } from '@/lib/hexUtils';
 
 const HexBoard = lazy(() => import('@/components/game/HexBoard').then(m => ({ default: m.HexBoard })));
@@ -29,6 +30,7 @@ const Room: React.FC = () => {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { playSound } = useSoundEffects();
   const [room, setRoom] = useState<RoomData | null>(null);
   const [loadingRoom, setLoadingRoom] = useState(true);
 
@@ -284,6 +286,7 @@ const Room: React.FC = () => {
                 displayName={profile?.display_name || 'Player'}
                 hostId={room.host_id}
                 guestId={room.guest_id}
+                onIncomingMessage={() => playSound('chat')}
               />
             </div>
           </div>
