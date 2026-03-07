@@ -18,9 +18,10 @@ interface RoomChatProps {
   displayName: string;
   hostId: string;
   guestId: string | null;
+  onIncomingMessage?: () => void;
 }
 
-export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName, hostId, guestId }) => {
+export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName, hostId, guestId, onIncomingMessage }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -47,7 +48,11 @@ export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName,
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `room_id=eq.${roomId}` },
         (payload) => {
-          setMessages(prev => [...prev, payload.new as ChatMessage]);
+          const msg = payload.new as ChatMessage;
+          setMessages(prev => [...prev, msg]);
+          if (msg.sender_id !== userId) {
+            onIncomingMessage?.();
+          }
         }
       )
       .subscribe();
