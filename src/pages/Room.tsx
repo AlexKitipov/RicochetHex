@@ -129,6 +129,54 @@ const Room: React.FC = () => {
     toast.success('Линкът е копиран!');
   };
 
+  const serializePawns = (pawns: Map<string, any>): Record<string, any> => {
+    const obj: Record<string, any> = {};
+    pawns.forEach((pawn, key) => { obj[key] = pawn; });
+    return obj;
+  };
+
+  const requestRematch = useCallback(async () => {
+    if (!room || !user) return;
+    
+    // If opponent already requested, accept and reset
+    if (room.rematch_requested_by && room.rematch_requested_by !== user.id) {
+      const initialPawns = createInitialPawns();
+      const newGameState = {
+        pawns: serializePawns(initialPawns),
+        currentPlayer: 'blue',
+        moveHistory: [],
+        historyIndex: -1,
+        gameOver: false,
+        winner: null,
+        moveCount: 0,
+      };
+      
+      await supabase
+        .from('game_rooms')
+        .update({
+          status: 'playing',
+          winner: null,
+          game_state: newGameState,
+          rematch_requested_by: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', room.id);
+      
+      playSound('rematch');
+      toast.success('Ремач! Играта започва отново!');
+    } else {
+      // Request rematch
+      await supabase
+        .from('game_rooms')
+        .update({ rematch_requested_by: user.id })
+        .eq('id', room.id);
+      
+      setRoom(prev => prev ? { ...prev, rematch_requested_by: user.id } : prev);
+      playSound('select');
+      toast.info('Предложението за ремач е изпратено!');
+    }
+  }, [room, user, playSound]);
+
   if (loading || loadingRoom) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
