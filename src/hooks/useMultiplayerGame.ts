@@ -115,6 +115,10 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
               ricochetPath: [],
             }));
             playSound('move');
+            // Check if it's now my turn after opponent's move
+            if (gs.currentPlayer === myColor) {
+              setTimeout(() => playSound('yourTurn'), 300);
+            }
           }
 
           // Check for winner update
@@ -127,7 +131,7 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [roomId, playSound]);
+  }, [roomId, playSound, myColor]);
 
   // Save game state to Supabase
   const syncGameState = useCallback(async (newState: GameState, newMoveCount: number) => {
