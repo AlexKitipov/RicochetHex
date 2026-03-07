@@ -1,14 +1,15 @@
-import React, { useEffect, useState, lazy, Suspense } from 'react';
+import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 import { Button } from '@/components/ui/button';
-import { Copy, Loader2, ArrowLeft, Crown } from 'lucide-react';
+import { Copy, Loader2, ArrowLeft, Crown, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import type { PlayerColor } from '@/lib/hexUtils';
+import { createInitialPawns } from '@/lib/hexUtils';
 
 const HexBoard = lazy(() => import('@/components/game/HexBoard').then(m => ({ default: m.HexBoard })));
 const MoveHistory = lazy(() => import('@/components/game/MoveHistory').then(m => ({ default: m.MoveHistory })));
@@ -23,6 +24,7 @@ interface RoomData {
   status: string;
   winner: string | null;
   game_state: any;
+  rematch_requested_by: string | null;
 }
 
 const Room: React.FC = () => {
@@ -64,13 +66,26 @@ const Room: React.FC = () => {
         { event: '*', schema: 'public', table: 'game_rooms', filter: `id=eq.${roomId}` },
         (payload) => {
           const newRoom = payload.new as unknown as RoomData;
-          setRoom(prev => ({
-            ...prev!,
-            status: newRoom.status,
-            guest_id: newRoom.guest_id,
-            winner: newRoom.winner,
-            host_color: newRoom.host_color,
-          }));
+          setRoom(prev => {
+            // Detect rematch accepted (status changed from finished to playing)
+            if (prev?.status === 'finished' && newRoom.status === 'playing') {
+              playSound('rematch');
+              toast.success('Ремач! Играта започва отново!');
+            }
+            // Detect rematch request from opponent
+            if (newRoom.rematch_requested_by && newRoom.rematch_requested_by !== user?.id && !prev?.rematch_requested_by) {
+              playSound('yourTurn');
+              toast.info('Противникът предлага ремач!');
+            }
+            return {
+              ...prev!,
+              status: newRoom.status,
+              guest_id: newRoom.guest_id,
+              winner: newRoom.winner,
+              host_color: newRoom.host_color,
+              rematch_requested_by: newRoom.rematch_requested_by,
+            };
+          });
         }
       )
       .subscribe();
@@ -113,6 +128,54 @@ const Room: React.FC = () => {
     navigator.clipboard.writeText(link);
     toast.success('Линкът е копиран!');
   };
+
+  const serializePawns = (pawns: Map<string, any>): Record<string, any> => {
+    const obj: Record<string, any> = {};
+    pawns.forEach((pawn, key) => { obj[key] = pawn; });
+    return obj;
+  };
+
+  const requestRematch = useCallback(async () => {
+    if (!room || !user) return;
+    
+    // If opponent already requested, accept and reset
+    if (room.rematch_requested_by && room.rematch_requested_by !== user.id) {
+      const initialPawns = createInitialPawns();
+      const newGameState = {
+        pawns: serializePawns(initialPawns),
+        currentPlayer: 'blue',
+        moveHistory: [],
+        historyIndex: -1,
+        gameOver: false,
+        winner: null,
+        moveCount: 0,
+      };
+      
+      await supabase
+        .from('game_rooms')
+        .update({
+          status: 'playing',
+          winner: null,
+          game_state: newGameState,
+          rematch_requested_by: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', room.id);
+      
+      playSound('rematch');
+      toast.success('Ремач! Играта започва отново!');
+    } else {
+      // Request rematch
+      await supabase
+        .from('game_rooms')
+        .update({ rematch_requested_by: user.id })
+        .eq('id', room.id);
+      
+      setRoom(prev => prev ? { ...prev, rematch_requested_by: user.id } : prev);
+      playSound('select');
+      toast.info('Предложението за ремач е изпратено!');
+    }
+  }, [room, user, playSound]);
 
   if (loading || loadingRoom) {
     return (
@@ -223,11 +286,22 @@ const Room: React.FC = () => {
       <div className="shrink-0 px-4 py-1.5 border-b border-border bg-card/40">
         <div className="container mx-auto flex items-center justify-center gap-3">
           {isFinished ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Crown className="h-4 w-4 text-yellow-500" />
               <span className="text-sm font-semibold">
                 {gameState.winner === myColor ? '🎉 Ти спечели!' : '😔 Противникът спечели'}
               </span>
+              {room.rematch_requested_by === user.id ? (
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Чакаш отговор...
+                </span>
+              ) : (
+                <Button size="sm" variant="outline" onClick={requestRematch} className="text-xs h-7 gap-1">
+                  <RotateCcw className="h-3 w-3" />
+                  {room.rematch_requested_by ? 'Приеми ремач' : 'Ремач'}
+                </Button>
+              )}
             </div>
           ) : (
             <>

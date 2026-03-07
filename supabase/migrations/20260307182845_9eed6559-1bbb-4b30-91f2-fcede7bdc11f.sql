@@ -1,0 +1,1 @@
+ALTER TABLE public.game_rooms ADD COLUMN rematch_requested_by uuid DEFAULT NULL;

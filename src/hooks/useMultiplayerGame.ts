@@ -99,8 +99,10 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
           if (!gs || !gs.pawns) return;
 
           const incomingCount = gs.moveCount || 0;
-          // Only apply if this is a newer state than what we have
-          if (incomingCount > moveCountRef.current) {
+          const isRematch = gs.gameOver === false && gs.moveCount === 0;
+          
+          // Apply if newer state OR if it's a rematch reset
+          if (incomingCount > moveCountRef.current || isRematch) {
             moveCountRef.current = incomingCount;
             setGameState(prev => ({
               ...prev,
@@ -114,10 +116,11 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
               possibleMoves: [],
               ricochetPath: [],
             }));
-            playSound('move');
-            // Check if it's now my turn after opponent's move
-            if (gs.currentPlayer === myColor) {
-              setTimeout(() => playSound('yourTurn'), 300);
+            if (!isRematch) {
+              playSound('move');
+              if (gs.currentPlayer === myColor) {
+                setTimeout(() => playSound('yourTurn'), 300);
+              }
             }
           }
 

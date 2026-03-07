@@ -98,6 +98,7 @@ export type Database = {
           host_color: string
           host_id: string | null
           id: string
+          rematch_requested_by: string | null
           room_code: string
           status: string
           updated_at: string
@@ -110,6 +111,7 @@ export type Database = {
           host_color?: string
           host_id?: string | null
           id?: string
+          rematch_requested_by?: string | null
           room_code?: string
           status?: string
           updated_at?: string
@@ -122,6 +124,7 @@ export type Database = {
           host_color?: string
           host_id?: string | null
           id?: string
+          rematch_requested_by?: string | null
           room_code?: string
           status?: string
           updated_at?: string
