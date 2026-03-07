@@ -1,14 +1,15 @@
-import React, { useEffect, useState, lazy, Suspense } from 'react';
+import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
 import { Button } from '@/components/ui/button';
-import { Copy, Loader2, ArrowLeft, Crown } from 'lucide-react';
+import { Copy, Loader2, ArrowLeft, Crown, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import type { PlayerColor } from '@/lib/hexUtils';
+import { createInitialPawns } from '@/lib/hexUtils';
 
 const HexBoard = lazy(() => import('@/components/game/HexBoard').then(m => ({ default: m.HexBoard })));
 const MoveHistory = lazy(() => import('@/components/game/MoveHistory').then(m => ({ default: m.MoveHistory })));
@@ -23,6 +24,7 @@ interface RoomData {
   status: string;
   winner: string | null;
   game_state: any;
+  rematch_requested_by: string | null;
 }
 
 const Room: React.FC = () => {
@@ -64,13 +66,26 @@ const Room: React.FC = () => {
         { event: '*', schema: 'public', table: 'game_rooms', filter: `id=eq.${roomId}` },
         (payload) => {
           const newRoom = payload.new as unknown as RoomData;
-          setRoom(prev => ({
-            ...prev!,
-            status: newRoom.status,
-            guest_id: newRoom.guest_id,
-            winner: newRoom.winner,
-            host_color: newRoom.host_color,
-          }));
+          setRoom(prev => {
+            // Detect rematch accepted (status changed from finished to playing)
+            if (prev?.status === 'finished' && newRoom.status === 'playing') {
+              playSound('rematch');
+              toast.success('Ремач! Играта започва отново!');
+            }
+            // Detect rematch request from opponent
+            if (newRoom.rematch_requested_by && newRoom.rematch_requested_by !== user?.id && !prev?.rematch_requested_by) {
+              playSound('yourTurn');
+              toast.info('Противникът предлага ремач!');
+            }
+            return {
+              ...prev!,
+              status: newRoom.status,
+              guest_id: newRoom.guest_id,
+              winner: newRoom.winner,
+              host_color: newRoom.host_color,
+              rematch_requested_by: newRoom.rematch_requested_by,
+            };
+          });
         }
       )
       .subscribe();

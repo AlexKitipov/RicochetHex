@@ -1,6 +1,6 @@
 import { useCallback, useState, useRef, useEffect } from 'react';
 
-type SoundType = 'select' | 'move' | 'ricochet' | 'capture' | 'victory' | 'chat' | 'yourTurn';
+type SoundType = 'select' | 'move' | 'ricochet' | 'capture' | 'victory' | 'chat' | 'yourTurn' | 'rematch';
 
 // Simple audio synthesis for game sounds
 const createOscillator = (
@@ -57,6 +57,11 @@ const soundConfigs: Record<SoundType, (ctx: AudioContext) => void> = {
     createOscillator(ctx, 440, 0.12, 'triangle', 0.2);
     setTimeout(() => createOscillator(ctx, 660, 0.12, 'triangle', 0.25), 120);
     setTimeout(() => createOscillator(ctx, 880, 0.15, 'triangle', 0.2), 240);
+  },
+  rematch: (ctx) => {
+    createOscillator(ctx, 523, 0.15, 'sine', 0.2);
+    setTimeout(() => createOscillator(ctx, 659, 0.15, 'sine', 0.2), 100);
+    setTimeout(() => createOscillator(ctx, 784, 0.2, 'sine', 0.25), 200);
   }
 };
 
