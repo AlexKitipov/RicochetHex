@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import type { PlayerColor } from '@/lib/hexUtils';
-import { createInitialPawns } from '@/lib/hexUtils';
 
 const HexBoard = lazy(() => import('@/components/game/HexBoard').then(m => ({ default: m.HexBoard })));
 const MoveHistory = lazy(() => import('@/components/game/MoveHistory').then(m => ({ default: m.MoveHistory })));
