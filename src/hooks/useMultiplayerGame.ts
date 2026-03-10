@@ -278,7 +278,7 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
 
       return { ...prev, selectedHex: null, possibleMoves: [], ricochetPath: [] };
     });
-  }, [isPlaying, gameState.gameOver, gameState.currentPlayer, myColor, playSound, syncGameState, recordMove]);
+  }, [isPlaying, gameState.gameOver, gameState.currentPlayer, myColor, playSound, submitMove]);
 
   return { gameState, selectHex, isMyTurn };
 }

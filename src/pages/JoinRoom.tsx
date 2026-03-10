@@ -22,31 +22,16 @@ const JoinRoom: React.FC = () => {
 
     const joinRoom = async () => {
       setJoining(true);
-      const { data: room, error } = await supabase
-        .from('game_rooms')
-        .select('*')
-        .eq('room_code', code.toUpperCase())
-        .eq('status', 'waiting')
-        .single();
+      const { data: roomId, error } = await supabase
+        .rpc('join_room', { p_room_code: code! });
 
-      if (error || !room) {
+      if (error || !roomId) {
         toast.error('Стаята не е намерена или вече е заета');
         navigate('/lobby');
         return;
       }
 
-      const { error: updateError } = await supabase
-        .from('game_rooms')
-        .update({ guest_id: user.id, status: 'playing' })
-        .eq('id', (room as any).id);
-
-      if (updateError) {
-        toast.error('Грешка при присъединяване');
-        navigate('/lobby');
-        return;
-      }
-
-      navigate(`/room/${(room as any).id}`);
+      navigate(`/room/${roomId}`);
     };
 
     joinRoom();
