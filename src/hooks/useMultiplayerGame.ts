@@ -150,13 +150,13 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
 
     const { error } = await supabase.rpc('submit_move', {
       p_room_id: roomId,
-      p_game_state: serialized as unknown as Record<string, unknown>,
+      p_game_state: JSON.parse(JSON.stringify(serialized)),
       p_from_q: from.q,
       p_from_r: from.r,
       p_to_q: to.q,
       p_to_r: to.r,
       p_move_number: moveNumber,
-    });
+    } as any);
 
     if (error) {
       console.error('Move rejected by server:', error.message);
