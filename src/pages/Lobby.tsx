@@ -48,30 +48,15 @@ const Lobby: React.FC = () => {
     setJoining(true);
     const code = roomCode.trim().toUpperCase();
 
-    const { data: room, error } = await supabase
-      .from('game_rooms')
-      .select('*')
-      .eq('room_code', code)
-      .eq('status', 'waiting')
-      .single();
-
-    if (error || !room) {
-      toast.error('Стаята не е намерена или вече е заета');
-      setJoining(false);
-      return;
-    }
-
-    const { error: updateError } = await supabase
-      .from('game_rooms')
-      .update({ guest_id: user.id, status: 'playing' })
-      .eq('id', (room as any).id);
+    const { data: roomId, error } = await supabase
+      .rpc('join_room', { p_room_code: code });
 
     setJoining(false);
-    if (updateError) {
-      toast.error('Грешка при присъединяване');
+    if (error || !roomId) {
+      toast.error('Стаята не е намерена или вече е заета');
       return;
     }
-    navigate(`/room/${(room as any).id}`);
+    navigate(`/room/${roomId}`);
   };
 
   if (loading) {

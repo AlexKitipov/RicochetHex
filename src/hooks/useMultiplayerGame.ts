@@ -136,8 +136,8 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
     return () => { supabase.removeChannel(channel); };
   }, [roomId, playSound, myColor]);
 
-  // Save game state to Supabase
-  const syncGameState = useCallback(async (newState: GameState, newMoveCount: number) => {
+  // Submit move via server-side RPC (validates turn, piece ownership)
+  const submitMove = useCallback(async (newState: GameState, newMoveCount: number, from: HexCoord, to: HexCoord, moveNumber: number) => {
     const serialized = {
       pawns: serializePawns(newState.pawns),
       currentPlayer: newState.currentPlayer,
@@ -148,34 +148,45 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
       moveCount: newMoveCount,
     };
 
-    const updateData: any = {
-      game_state: serialized,
-      updated_at: new Date().toISOString(),
-    };
+    const { error } = await supabase.rpc('submit_move', {
+      p_room_id: roomId,
+      p_game_state: JSON.parse(JSON.stringify(serialized)),
+      p_from_q: from.q,
+      p_from_r: from.r,
+      p_to_q: to.q,
+      p_to_r: to.r,
+      p_move_number: moveNumber,
+    } as any);
 
-    if (newState.winner) {
-      updateData.winner = newState.winner;
-      updateData.status = 'finished';
+    if (error) {
+      console.error('Move rejected by server:', error.message);
+      toast.error('Невалиден ход');
+      // Reload state from server
+      const { data } = await supabase
+        .from('game_rooms')
+        .select('game_state')
+        .eq('id', roomId)
+        .single();
+      if (data?.game_state && typeof data.game_state === 'object') {
+        const gs = data.game_state as any;
+        if (gs.pawns && gs.currentPlayer) {
+          setGameState(prev => ({
+            ...prev,
+            pawns: deserializePawns(gs.pawns),
+            currentPlayer: gs.currentPlayer,
+            moveHistory: gs.moveHistory || [],
+            historyIndex: gs.historyIndex ?? -1,
+            gameOver: gs.gameOver || false,
+            winner: gs.winner || null,
+            selectedHex: null,
+            possibleMoves: [],
+            ricochetPath: [],
+          }));
+          moveCountRef.current = gs.moveCount || 0;
+        }
+      }
     }
-
-    await supabase
-      .from('game_rooms')
-      .update(updateData)
-      .eq('id', roomId);
   }, [roomId]);
-
-  // Record move in game_moves table
-  const recordMove = useCallback(async (from: HexCoord, to: HexCoord, moveNumber: number) => {
-    await supabase.from('game_moves').insert({
-      room_id: roomId,
-      player_id: userId,
-      from_q: from.q,
-      from_r: from.r,
-      to_q: to.q,
-      to_r: to.r,
-      move_number: moveNumber,
-    });
-  }, [roomId, userId]);
 
   const isMyTurn = isPlaying && gameState.currentPlayer === myColor;
 
@@ -258,9 +269,8 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
             winner,
           };
 
-          // Sync to DB (fire-and-forget)
-          syncGameState(newState, newMoveCount);
-          recordMove(from, to, move.moveNumber);
+          // Submit to server (validates turn & piece ownership)
+          submitMove(newState, newMoveCount, from, to, move.moveNumber);
 
           return newState;
         }
@@ -268,7 +278,7 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
 
       return { ...prev, selectedHex: null, possibleMoves: [], ricochetPath: [] };
     });
-  }, [isPlaying, gameState.gameOver, gameState.currentPlayer, myColor, playSound, syncGameState, recordMove]);
+  }, [isPlaying, gameState.gameOver, gameState.currentPlayer, myColor, playSound, submitMove]);
 
   return { gameState, selectHex, isMyTurn };
 }
