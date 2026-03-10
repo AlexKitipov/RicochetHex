@@ -269,9 +269,8 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
             winner,
           };
 
-          // Sync to DB (fire-and-forget)
-          syncGameState(newState, newMoveCount);
-          recordMove(from, to, move.moveNumber);
+          // Submit to server (validates turn & piece ownership)
+          submitMove(newState, newMoveCount, from, to, move.moveNumber);
 
           return newState;
         }
