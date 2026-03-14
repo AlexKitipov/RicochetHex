@@ -281,7 +281,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
               className="w-full text-sm rounded-xl group border-primary/30 hover:border-primary/60 hover:bg-primary/5"
             >
               <Globe className="mr-2 h-4 w-4 text-primary" />
-              Онлайн Мултиплейър
+              Online Multiplayer
               <ChevronRight className="ml-auto h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Button>
             <p className="text-[10px] text-muted-foreground text-center mt-1">
