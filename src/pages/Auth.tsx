@@ -33,7 +33,7 @@ const Auth: React.FC = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!displayName.trim()) {
-      toast.error('Моля, въведи име');
+      toast.error('Please enter a name');
       return;
     }
     setIsLoading(true);
@@ -42,7 +42,7 @@ const Auth: React.FC = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success('Акаунтът е създаден!');
+      toast.success('Account created!');
       navigate('/lobby');
     }
   };
@@ -59,9 +59,9 @@ const Auth: React.FC = () => {
   };
 
   const tabs = [
-    { key: 'login' as AuthTab, label: 'Вход', icon: LogIn },
-    { key: 'signup' as AuthTab, label: 'Регистрация', icon: UserPlus },
-    { key: 'guest' as AuthTab, label: 'Гост', icon: User },
+    { key: 'login' as AuthTab, label: 'Login', icon: LogIn },
+    { key: 'signup' as AuthTab, label: 'Sign Up', icon: UserPlus },
+    { key: 'guest' as AuthTab, label: 'Guest', icon: User },
   ];
 
   return (
@@ -78,7 +78,7 @@ const Auth: React.FC = () => {
               RicochetHex
             </span>
           </h1>
-          <p className="text-sm text-muted-foreground">Мултиплейър — играй с приятели онлайн</p>
+          <p className="text-sm text-muted-foreground">Multiplayer — play with friends online</p>
         </div>
 
         <div className="glass rounded-2xl p-6 space-y-5 shadow-xl">
@@ -106,7 +106,7 @@ const Auth: React.FC = () => {
             <form onSubmit={handleLogin} className="space-y-3">
               <Input
                 type="email"
-                placeholder="Имейл"
+                placeholder="Email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
@@ -114,14 +114,14 @@ const Auth: React.FC = () => {
               />
               <Input
                 type="password"
-                placeholder="Парола"
+                placeholder="Password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
                 className="bg-secondary/50"
               />
               <Button type="submit" disabled={isLoading} className="w-full bg-gradient-to-r from-primary to-primary/80 rounded-xl group">
-                {isLoading ? 'Зареждане...' : 'Вход'}
+                {isLoading ? 'Loading...' : 'Login'}
                 <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
               </Button>
             </form>
@@ -132,7 +132,7 @@ const Auth: React.FC = () => {
             <form onSubmit={handleSignup} className="space-y-3">
               <Input
                 type="text"
-                placeholder="Име на играча"
+                placeholder="Player name"
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
                 required
@@ -140,7 +140,7 @@ const Auth: React.FC = () => {
               />
               <Input
                 type="email"
-                placeholder="Имейл"
+                placeholder="Email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
@@ -148,7 +148,7 @@ const Auth: React.FC = () => {
               />
               <Input
                 type="password"
-                placeholder="Парола (мин. 6 символа)"
+                placeholder="Password (min. 6 characters)"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
@@ -156,7 +156,7 @@ const Auth: React.FC = () => {
                 className="bg-secondary/50"
               />
               <Button type="submit" disabled={isLoading} className="w-full bg-gradient-to-r from-primary to-primary/80 rounded-xl group">
-                {isLoading ? 'Зареждане...' : 'Създай акаунт'}
+                {isLoading ? 'Loading...' : 'Create Account'}
                 <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
               </Button>
             </form>
@@ -167,16 +167,16 @@ const Auth: React.FC = () => {
             <div className="space-y-3">
               <Input
                 type="text"
-                placeholder="Прякор (по желание)"
+                placeholder="Nickname (optional)"
                 value={guestName}
                 onChange={e => setGuestName(e.target.value)}
                 className="bg-secondary/50"
               />
               <p className="text-[10px] text-muted-foreground text-center">
-                Играй без регистрация. Данните няма да се запазят.
+                Play without registration. Data won't be saved.
               </p>
               <Button onClick={handleGuest} disabled={isLoading} className="w-full bg-gradient-to-r from-accent to-accent/80 text-accent-foreground rounded-xl group">
-                {isLoading ? 'Зареждане...' : 'Играй като гост'}
+                {isLoading ? 'Loading...' : 'Play as Guest'}
                 <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
               </Button>
             </div>
@@ -188,7 +188,7 @@ const Auth: React.FC = () => {
               onClick={() => navigate('/')}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              ← Обратно към локалната игра
+              ← Back to local play
             </button>
           </div>
         </div>

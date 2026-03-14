@@ -27,7 +27,6 @@ export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName,
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Load existing messages
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
@@ -40,7 +39,6 @@ export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName,
     load();
   }, [roomId]);
 
-  // Subscribe to new messages
   useEffect(() => {
     const channel = supabase
       .channel(`chat-${roomId}`)
@@ -60,7 +58,6 @@ export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName,
     return () => { supabase.removeChannel(channel); };
   }, [roomId]);
 
-  // Auto-scroll on new messages
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -87,22 +84,22 @@ export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName,
   };
 
   const getSenderLabel = (senderId: string) => {
-    if (senderId === userId) return 'Ти';
-    if (senderId === hostId) return 'Хост';
-    return 'Играч 2';
+    if (senderId === userId) return 'You';
+    if (senderId === hostId) return 'Host';
+    return 'Player 2';
   };
 
   return (
     <div className="flex flex-col h-full border border-border rounded-xl bg-card/60 backdrop-blur-sm overflow-hidden">
       <div className="px-3 py-2 border-b border-border flex items-center gap-2">
         <MessageCircle className="h-3.5 w-3.5 text-primary" />
-        <span className="text-xs font-semibold text-foreground">Чат</span>
+        <span className="text-xs font-semibold text-foreground">Chat</span>
       </div>
 
       <ScrollArea className="flex-1 px-3 py-2">
         <div className="space-y-2">
           {messages.length === 0 && (
-            <p className="text-[10px] text-muted-foreground text-center py-4">Няма съобщения</p>
+            <p className="text-[10px] text-muted-foreground text-center py-4">No messages yet</p>
           )}
           {messages.map(msg => {
             const isMe = msg.sender_id === userId;
@@ -130,7 +127,7 @@ export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName,
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Напиши..."
+          placeholder="Type a message..."
           className="h-8 text-xs"
           disabled={sending}
         />
