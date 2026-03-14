@@ -285,7 +285,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
               <ChevronRight className="ml-auto h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Button>
             <p className="text-[10px] text-muted-foreground text-center mt-1">
-              Играй с приятели онлайн в реално време
+              Play with friends online in real time
             </p>
           </div>
         </div>

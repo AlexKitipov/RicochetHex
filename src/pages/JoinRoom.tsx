@@ -14,7 +14,6 @@ const JoinRoom: React.FC = () => {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      // Redirect to auth, then come back
       navigate(`/auth?redirect=/join/${code}`);
       return;
     }
@@ -26,7 +25,7 @@ const JoinRoom: React.FC = () => {
         .rpc('join_room', { p_room_code: code! });
 
       if (error || !roomId) {
-        toast.error('Стаята не е намерена или вече е заета');
+        toast.error('Room not found or already full');
         navigate('/lobby');
         return;
       }
@@ -41,7 +40,7 @@ const JoinRoom: React.FC = () => {
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Присъединяване към стая...</p>
+        <p className="text-sm text-muted-foreground">Joining room...</p>
       </div>
     </div>
   );

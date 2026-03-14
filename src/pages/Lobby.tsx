@@ -35,7 +35,7 @@ const Lobby: React.FC = () => {
     setCreating(false);
 
     if (error) {
-      toast.error('Грешка при създаване на стая: ' + error.message);
+      toast.error('Error creating room: ' + error.message);
       return;
     }
     if (data) {
@@ -53,7 +53,7 @@ const Lobby: React.FC = () => {
 
     setJoining(false);
     if (error || !roomId) {
-      toast.error('Стаята не е намерена или вече е заета');
+      toast.error('Room not found or already full');
       return;
     }
     navigate(`/room/${roomId}`);
@@ -78,11 +78,11 @@ const Lobby: React.FC = () => {
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold tracking-tight text-foreground mb-1">
             <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-              Мултиплейър Лоби
+              Multiplayer Lobby
             </span>
           </h1>
           <p className="text-sm text-muted-foreground">
-            Здравей, <span className="text-foreground font-medium">{profile?.display_name || 'Player'}</span>!
+            Hello, <span className="text-foreground font-medium">{profile?.display_name || 'Player'}</span>!
           </p>
         </div>
 
@@ -90,11 +90,11 @@ const Lobby: React.FC = () => {
           {/* Create Room */}
           <div className="space-y-3">
             <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground block">
-              Създай нова стая
+              Create New Room
             </label>
             <div>
               <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2 block">
-                Твой цвят
+                Your Color
               </label>
               <RadioGroup
                 value={hostColor}
@@ -109,7 +109,7 @@ const Lobby: React.FC = () => {
                     peer-data-[state=checked]:border-primary/50 peer-data-[state=checked]:bg-primary/10 [&:has([data-state=checked])]:border-primary/50"
                   >
                     <div className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-400 to-blue-600" />
-                    <span className="text-xs font-medium">Син</span>
+                    <span className="text-xs font-medium">Blue</span>
                   </Label>
                 </div>
                 <div>
@@ -120,7 +120,7 @@ const Lobby: React.FC = () => {
                     peer-data-[state=checked]:border-destructive/50 peer-data-[state=checked]:bg-destructive/10 [&:has([data-state=checked])]:border-destructive/50"
                   >
                     <div className="w-4 h-4 rounded-full bg-gradient-to-br from-red-400 to-red-600" />
-                    <span className="text-xs font-medium">Червен</span>
+                    <span className="text-xs font-medium">Red</span>
                   </Label>
                 </div>
               </RadioGroup>
@@ -131,7 +131,7 @@ const Lobby: React.FC = () => {
               className="w-full bg-gradient-to-r from-primary to-primary/80 rounded-xl group"
             >
               {creating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-              Създай стая
+              Create Room
             </Button>
           </div>
 
@@ -140,18 +140,18 @@ const Lobby: React.FC = () => {
               <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-card px-3 text-muted-foreground">или</span>
+              <span className="bg-card px-3 text-muted-foreground">or</span>
             </div>
           </div>
 
           {/* Join Room */}
           <div className="space-y-3">
             <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground block">
-              Присъедини се с код
+              Join with Code
             </label>
             <div className="flex gap-2">
               <Input
-                placeholder="Въведи код (напр. AB12CD)"
+                placeholder="Enter code (e.g. AB12CD)"
                 value={roomCode}
                 onChange={e => setRoomCode(e.target.value.toUpperCase())}
                 maxLength={6}
@@ -174,14 +174,14 @@ const Lobby: React.FC = () => {
             onClick={() => navigate('/')}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
-            ← Локална игра
+            ← Local Play
           </button>
           <button
             onClick={signOut}
             className="text-xs text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1"
           >
             <LogOut className="h-3 w-3" />
-            Изход
+            Logout
           </button>
         </div>
       </div>

@@ -45,7 +45,7 @@ const Room: React.FC = () => {
         .eq('id', roomId)
         .single();
       if (error || !data) {
-        toast.error('Стаята не е намерена');
+        toast.error('Room not found');
         navigate('/lobby');
         return;
       }
@@ -66,15 +66,13 @@ const Room: React.FC = () => {
         (payload) => {
           const newRoom = payload.new as unknown as RoomData;
           setRoom(prev => {
-            // Detect rematch accepted (status changed from finished to playing)
             if (prev?.status === 'finished' && newRoom.status === 'playing') {
               playSound('rematch');
-              toast.success('Ремач! Играта започва отново!');
+              toast.success('Rematch! The game starts again!');
             }
-            // Detect rematch request from opponent
             if (newRoom.rematch_requested_by && newRoom.rematch_requested_by !== user?.id && !prev?.rematch_requested_by) {
               playSound('yourTurn');
-              toast.info('Противникът предлага ремач!');
+              toast.info('Your opponent requests a rematch!');
             }
             return {
               ...prev!,
@@ -96,7 +94,6 @@ const Room: React.FC = () => {
     if (!loading && !user) navigate('/auth');
   }, [loading, user, navigate]);
 
-  // Determine my color
   const isHost = user?.id === room?.host_id;
   const isGuest = user?.id === room?.guest_id;
   const myColor: PlayerColor = isHost
@@ -107,7 +104,6 @@ const Room: React.FC = () => {
   const isWaiting = room?.status === 'waiting';
   const isFinished = room?.status === 'finished';
 
-  // Multiplayer game hook
   const { gameState, selectHex, isMyTurn } = useMultiplayerGame({
     roomId: roomId || '',
     userId: user?.id || '',
@@ -118,14 +114,14 @@ const Room: React.FC = () => {
   const copyRoomCode = () => {
     if (!room) return;
     navigator.clipboard.writeText(room.room_code);
-    toast.success(`Кодът ${room.room_code} е копиран!`);
+    toast.success(`Code ${room.room_code} copied!`);
   };
 
   const copyRoomLink = () => {
     if (!room) return;
     const link = `${window.location.origin}/join/${room.room_code}`;
     navigator.clipboard.writeText(link);
-    toast.success('Линкът е копиран!');
+    toast.success('Link copied!');
   };
 
   const requestRematch = useCallback(async () => {
@@ -136,17 +132,17 @@ const Room: React.FC = () => {
     });
 
     if (error) {
-      toast.error('Грешка при заявка за ремач');
+      toast.error('Error requesting rematch');
       return;
     }
 
     if (result === 'accepted') {
       playSound('rematch');
-      toast.success('Ремач! Играта започва отново!');
+      toast.success('Rematch! The game starts again!');
     } else {
       setRoom(prev => prev ? { ...prev, rematch_requested_by: user.id } : prev);
       playSound('select');
-      toast.info('Предложението за ремач е изпратено!');
+      toast.info('Rematch request sent!');
     }
   }, [room, user, playSound]);
 
@@ -173,7 +169,7 @@ const Room: React.FC = () => {
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">
               <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                Стая
+                Room
               </span>
             </h1>
           </div>
@@ -181,7 +177,7 @@ const Room: React.FC = () => {
           <div className="glass rounded-2xl p-6 space-y-5 shadow-xl border border-border bg-card/60 backdrop-blur-sm">
             <div className="text-center space-y-2">
               <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Код на стаята
+                Room Code
               </label>
               <div className="flex items-center justify-center gap-3">
                 <span className="text-4xl font-mono font-bold tracking-[0.3em] text-foreground">
@@ -193,22 +189,22 @@ const Room: React.FC = () => {
               </div>
               <Button variant="outline" size="sm" onClick={copyRoomLink} className="text-xs">
                 <Copy className="h-3 w-3 mr-1" />
-                Копирай линк за покана
+                Copy invite link
               </Button>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground block">Играчи</label>
+              <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground block">Players</label>
               <div className="grid grid-cols-2 gap-3">
                 <div className={`rounded-xl border p-3 text-center ${room.host_color === 'blue' ? 'border-blue-500/30 bg-blue-500/5' : 'border-red-500/30 bg-red-500/5'}`}>
                   <div className={`w-6 h-6 mx-auto rounded-full bg-gradient-to-br ${room.host_color === 'blue' ? 'from-blue-400 to-blue-600' : 'from-red-400 to-red-600'}`} />
-                  <p className="text-xs font-semibold mt-1">{isHost ? 'Ти (хост)' : 'Хост'}</p>
-                  <p className="text-[10px] text-muted-foreground">Готов ✓</p>
+                  <p className="text-xs font-semibold mt-1">{isHost ? 'You (host)' : 'Host'}</p>
+                  <p className="text-[10px] text-muted-foreground">Ready ✓</p>
                 </div>
                 <div className={`rounded-xl border p-3 text-center ${room.host_color === 'blue' ? 'border-red-500/30 bg-red-500/5' : 'border-blue-500/30 bg-blue-500/5'}`}>
                   <div className={`w-6 h-6 mx-auto rounded-full ${room.guest_id ? `bg-gradient-to-br ${room.host_color === 'blue' ? 'from-red-400 to-red-600' : 'from-blue-400 to-blue-600'}` : 'bg-secondary border-2 border-dashed border-muted-foreground/30'}`} />
-                  <p className="text-xs font-semibold mt-1">{room.guest_id ? (isGuest ? 'Ти' : 'Играч 2') : 'Чака...'}</p>
-                  <p className="text-[10px] text-muted-foreground">{room.guest_id ? 'Готов ✓' : 'Изпрати кода'}</p>
+                  <p className="text-xs font-semibold mt-1">{room.guest_id ? (isGuest ? 'You' : 'Player 2') : 'Waiting...'}</p>
+                  <p className="text-[10px] text-muted-foreground">{room.guest_id ? 'Ready ✓' : 'Share the code'}</p>
                 </div>
               </div>
             </div>
@@ -216,16 +212,16 @@ const Room: React.FC = () => {
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Изчакване на втори играч...
+                Waiting for second player...
               </div>
-              <p className="text-[10px] text-muted-foreground mt-2">Изпрати кода или линка на приятел</p>
+              <p className="text-[10px] text-muted-foreground mt-2">Share the code or link with a friend</p>
             </div>
           </div>
 
           <div className="flex justify-start mt-4">
             <button onClick={() => navigate('/lobby')} className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
               <ArrowLeft className="h-3 w-3" />
-              Обратно в лобито
+              Back to lobby
             </button>
           </div>
         </div>
@@ -242,7 +238,7 @@ const Room: React.FC = () => {
         <div className="container mx-auto px-4 py-1.5 flex items-center justify-between">
           <button onClick={() => navigate('/lobby')} className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <ArrowLeft className="h-3 w-3" />
-            Лоби
+            Lobby
           </button>
           <h1 className="text-sm md:text-base font-bold text-center">
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -250,7 +246,7 @@ const Room: React.FC = () => {
             </span>
           </h1>
           <div className="text-xs text-muted-foreground">
-            Стая: <span className="font-mono font-bold">{room.room_code}</span>
+            Room: <span className="font-mono font-bold">{room.room_code}</span>
           </div>
         </div>
       </header>
@@ -262,17 +258,17 @@ const Room: React.FC = () => {
             <div className="flex items-center gap-3">
               <Crown className="h-4 w-4 text-yellow-500" />
               <span className="text-sm font-semibold">
-                {gameState.winner === myColor ? '🎉 Ти спечели!' : '😔 Противникът спечели'}
+                {gameState.winner === myColor ? '🎉 You won!' : '😔 Your opponent won'}
               </span>
               {room.rematch_requested_by === user.id ? (
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Loader2 className="h-3 w-3 animate-spin" />
-                  Чакаш отговор...
+                  Waiting for response...
                 </span>
               ) : (
                 <Button size="sm" variant="outline" onClick={requestRematch} className="text-xs h-7 gap-1">
                   <RotateCcw className="h-3 w-3" />
-                  {room.rematch_requested_by ? 'Приеми ремач' : 'Ремач'}
+                  {room.rematch_requested_by ? 'Accept Rematch' : 'Rematch'}
                 </Button>
               )}
             </div>
@@ -284,10 +280,10 @@ const Room: React.FC = () => {
                   : 'bg-gradient-to-br from-red-400 to-red-600'
               }`} />
               <span className="text-xs font-medium">
-                {isMyTurn ? '🎯 Твоят ход' : '⏳ Ходът на противника...'}
+                {isMyTurn ? '🎯 Your turn' : '⏳ Opponent\'s turn...'}
               </span>
               <span className="text-[10px] text-muted-foreground">
-                (Ти си {myColor === 'blue' ? '🔵 Сини' : '🔴 Червени'})
+                (You are {myColor === 'blue' ? '🔵 Blue' : '🔴 Red'})
               </span>
             </>
           )}
