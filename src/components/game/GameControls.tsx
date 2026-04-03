@@ -148,6 +148,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
             size="icon" 
             className="h-7 w-7 rounded-lg" 
             onClick={onTogglePause}
+            aria-label={isPaused ? "Resume game" : "Pause game"}
           >
             {isPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
           </Button>
