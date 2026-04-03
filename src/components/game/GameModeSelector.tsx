@@ -159,7 +159,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                         [&:has([data-state=checked])]:border-glow-blue/60
                       `}
                     >
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg" />
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg" aria-hidden="true" />
                        <span className="text-xs font-semibold">Blue</span>
                        <span className="text-[10px] text-muted-foreground">First move</span>
                     </Label>
