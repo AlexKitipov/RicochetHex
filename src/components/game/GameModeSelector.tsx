@@ -262,7 +262,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
           {/* Game Info */}
           <div className="text-[10px] text-muted-foreground text-center space-y-0.5">
             <p className="flex items-center justify-center gap-1">
-               <span className="w-1.5 h-1.5 rounded-full bg-glow-blue inline-block" /> Blue moves first
+               <span className="w-1.5 h-1.5 rounded-full bg-glow-blue inline-block" aria-hidden="true" /> Blue moves first
              </p>
              {selectedMode === 'vs-ai' && (
                <p>
