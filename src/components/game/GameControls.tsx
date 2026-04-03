@@ -128,10 +128,10 @@ export const GameControls: React.FC<GameControlsProps> = ({
                 <Loader2 className="h-3 w-3 animate-spin" />
                 AI thinking...
               </> : isPaused && gameMode === 'ai-vs-ai' ? <>
-                <div className={`w-2 h-2 rounded-full ${currentPlayer === 'blue' ? 'bg-glow-blue' : 'bg-glow-red'}`} />
+                <div className={`w-2 h-2 rounded-full ${currentPlayer === 'blue' ? 'bg-glow-blue' : 'bg-glow-red'}`} aria-hidden="true" />
                 Paused
               </> : <>
-                <div className={`w-2 h-2 rounded-full ${currentPlayer === 'blue' ? 'bg-glow-blue' : 'bg-glow-red'} animate-glow-pulse`} />
+                <div className={`w-2 h-2 rounded-full ${currentPlayer === 'blue' ? 'bg-glow-blue' : 'bg-glow-red'} animate-glow-pulse`} aria-hidden="true" />
                 Turn: {currentPlayer === 'blue' ? 'Blue' : 'Red'}
                 {gameMode === 'vs-ai' && currentPlayer === aiColor && ' (AI)'}
                 {gameMode === 'ai-vs-ai' && ' (AI)'}
