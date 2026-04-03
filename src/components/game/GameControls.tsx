@@ -167,13 +167,13 @@ export const GameControls: React.FC<GameControlsProps> = ({
         </Button>
 
         {onSave && (
-          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleSave} disabled={isAIThinking} title="Save">
+          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleSave} disabled={isAIThinking} aria-label="Save game">
             <Save className="h-3.5 w-3.5" />
           </Button>
         )}
         
         {onLoad && hasSavedGame && (
-          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleLoad} disabled={isAIThinking} title="Load">
+          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleLoad} disabled={isAIThinking} aria-label="Load game">
             <FolderOpen className="h-3.5 w-3.5" />
           </Button>
         )}
