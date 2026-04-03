@@ -188,7 +188,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
         
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" title="Rules">
+            <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" aria-label="Game rules">
               <HelpCircle className="h-3.5 w-3.5" />
             </Button>
           </DialogTrigger>
