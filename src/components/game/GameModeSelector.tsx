@@ -194,7 +194,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                 {/* Blue AI */}
                 <div className="space-y-2">
                    <label className="text-[10px] font-medium uppercase tracking-wider text-glow-blue flex items-center gap-1">
-                     <div className="w-2 h-2 rounded-full bg-glow-blue" /> Blue AI
+                     <div className="w-2 h-2 rounded-full bg-glow-blue" aria-hidden="true" /> Blue AI
                   </label>
                   <RadioGroup
                     value={blueDifficulty}
