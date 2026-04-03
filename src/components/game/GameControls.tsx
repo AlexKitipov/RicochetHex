@@ -154,15 +154,15 @@ export const GameControls: React.FC<GameControlsProps> = ({
           </Button>
         )}
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onUndo} disabled={!canUndo} title="Undo">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onUndo} disabled={!canUndo} aria-label="Undo">
           <Undo2 className="h-3.5 w-3.5" />
         </Button>
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onRedo} disabled={!canRedo} title="Redo">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onRedo} disabled={!canRedo} aria-label="Redo">
           <Redo2 className="h-3.5 w-3.5" />
         </Button>
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onReset} title="New Game">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onReset} aria-label="New Game">
           <RotateCcw className="h-3.5 w-3.5" />
         </Button>
 
