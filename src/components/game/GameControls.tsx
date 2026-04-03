@@ -178,11 +178,11 @@ export const GameControls: React.FC<GameControlsProps> = ({
           </Button>
         )}
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onToggleSound} title={soundEnabled ? "Mute" : "Unmute"}>
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onToggleSound} aria-label={soundEnabled ? "Mute sound" : "Unmute sound"}>
           {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
         </Button>
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onChangeMode} disabled={isAIThinking} title="Menu">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onChangeMode} disabled={isAIThinking} aria-label="Back to menu">
           <ArrowLeft className="h-3.5 w-3.5" />
         </Button>
         
