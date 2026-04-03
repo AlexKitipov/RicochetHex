@@ -220,7 +220,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                 {/* Red AI */}
                 <div className="space-y-2">
                    <label className="text-[10px] font-medium uppercase tracking-wider text-glow-red flex items-center gap-1">
-                     <div className="w-2 h-2 rounded-full bg-glow-red" /> Red AI
+                     <div className="w-2 h-2 rounded-full bg-glow-red" aria-hidden="true" /> Red AI
                   </label>
                   <RadioGroup
                     value={redDifficulty}
