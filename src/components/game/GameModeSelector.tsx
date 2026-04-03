@@ -32,9 +32,9 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+    <main className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden" aria-label="Game mode selection">
       {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
         <div className="absolute top-1/4 -left-32 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 -right-32 w-64 h-64 bg-accent/5 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
@@ -159,7 +159,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                         [&:has([data-state=checked])]:border-glow-blue/60
                       `}
                     >
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg" />
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg" aria-hidden="true" />
                        <span className="text-xs font-semibold">Blue</span>
                        <span className="text-[10px] text-muted-foreground">First move</span>
                     </Label>
@@ -177,7 +177,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                         [&:has([data-state=checked])]:border-glow-red/60
                       `}
                     >
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-lg" />
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-lg" aria-hidden="true" />
                        <span className="text-xs font-semibold">Red</span>
                        <span className="text-[10px] text-muted-foreground">Second move</span>
                     </Label>
@@ -194,7 +194,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                 {/* Blue AI */}
                 <div className="space-y-2">
                    <label className="text-[10px] font-medium uppercase tracking-wider text-glow-blue flex items-center gap-1">
-                     <div className="w-2 h-2 rounded-full bg-glow-blue" /> Blue AI
+                     <div className="w-2 h-2 rounded-full bg-glow-blue" aria-hidden="true" /> Blue AI
                   </label>
                   <RadioGroup
                     value={blueDifficulty}
@@ -220,7 +220,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
                 {/* Red AI */}
                 <div className="space-y-2">
                    <label className="text-[10px] font-medium uppercase tracking-wider text-glow-red flex items-center gap-1">
-                     <div className="w-2 h-2 rounded-full bg-glow-red" /> Red AI
+                     <div className="w-2 h-2 rounded-full bg-glow-red" aria-hidden="true" /> Red AI
                   </label>
                   <RadioGroup
                     value={redDifficulty}
@@ -262,7 +262,7 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
           {/* Game Info */}
           <div className="text-[10px] text-muted-foreground text-center space-y-0.5">
             <p className="flex items-center justify-center gap-1">
-               <span className="w-1.5 h-1.5 rounded-full bg-glow-blue inline-block" /> Blue moves first
+               <span className="w-1.5 h-1.5 rounded-full bg-glow-blue inline-block" aria-hidden="true" /> Blue moves first
              </p>
              {selectedMode === 'vs-ai' && (
                <p>
@@ -290,6 +290,6 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 };

@@ -128,10 +128,10 @@ export const GameControls: React.FC<GameControlsProps> = ({
                 <Loader2 className="h-3 w-3 animate-spin" />
                 AI thinking...
               </> : isPaused && gameMode === 'ai-vs-ai' ? <>
-                <div className={`w-2 h-2 rounded-full ${currentPlayer === 'blue' ? 'bg-glow-blue' : 'bg-glow-red'}`} />
+                <div className={`w-2 h-2 rounded-full ${currentPlayer === 'blue' ? 'bg-glow-blue' : 'bg-glow-red'}`} aria-hidden="true" />
                 Paused
               </> : <>
-                <div className={`w-2 h-2 rounded-full ${currentPlayer === 'blue' ? 'bg-glow-blue' : 'bg-glow-red'} animate-glow-pulse`} />
+                <div className={`w-2 h-2 rounded-full ${currentPlayer === 'blue' ? 'bg-glow-blue' : 'bg-glow-red'} animate-glow-pulse`} aria-hidden="true" />
                 Turn: {currentPlayer === 'blue' ? 'Blue' : 'Red'}
                 {gameMode === 'vs-ai' && currentPlayer === aiColor && ' (AI)'}
                 {gameMode === 'ai-vs-ai' && ' (AI)'}
@@ -148,46 +148,47 @@ export const GameControls: React.FC<GameControlsProps> = ({
             size="icon" 
             className="h-7 w-7 rounded-lg" 
             onClick={onTogglePause}
+            aria-label={isPaused ? "Resume game" : "Pause game"}
           >
             {isPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
           </Button>
         )}
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onUndo} disabled={!canUndo} title="Undo">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onUndo} disabled={!canUndo} aria-label="Undo">
           <Undo2 className="h-3.5 w-3.5" />
         </Button>
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onRedo} disabled={!canRedo} title="Redo">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onRedo} disabled={!canRedo} aria-label="Redo">
           <Redo2 className="h-3.5 w-3.5" />
         </Button>
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onReset} title="New Game">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onReset} aria-label="New Game">
           <RotateCcw className="h-3.5 w-3.5" />
         </Button>
 
         {onSave && (
-          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleSave} disabled={isAIThinking} title="Save">
+          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleSave} disabled={isAIThinking} aria-label="Save game">
             <Save className="h-3.5 w-3.5" />
           </Button>
         )}
         
         {onLoad && hasSavedGame && (
-          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleLoad} disabled={isAIThinking} title="Load">
+          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={handleLoad} disabled={isAIThinking} aria-label="Load game">
             <FolderOpen className="h-3.5 w-3.5" />
           </Button>
         )}
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onToggleSound} title={soundEnabled ? "Mute" : "Unmute"}>
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onToggleSound} aria-label={soundEnabled ? "Mute sound" : "Unmute sound"}>
           {soundEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
         </Button>
         
-        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onChangeMode} disabled={isAIThinking} title="Menu">
+        <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" onClick={onChangeMode} disabled={isAIThinking} aria-label="Back to menu">
           <ArrowLeft className="h-3.5 w-3.5" />
         </Button>
         
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" title="Rules">
+            <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg" aria-label="Game rules">
               <HelpCircle className="h-3.5 w-3.5" />
             </Button>
           </DialogTrigger>
