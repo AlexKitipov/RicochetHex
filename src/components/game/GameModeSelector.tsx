@@ -290,6 +290,6 @@ export const GameModeSelector: React.FC<GameModeSelectorProps> = ({ onStart }) =
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
