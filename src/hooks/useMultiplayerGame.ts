@@ -136,30 +136,37 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
     return () => { supabase.removeChannel(channel); };
   }, [roomId, playSound, myColor]);
 
-  // Submit move via server-side RPC (validates turn, piece ownership)
-  const submitMove = useCallback(async (newState: GameState, newMoveCount: number, from: HexCoord, to: HexCoord, moveNumber: number) => {
-    const serialized = {
-      pawns: serializePawns(newState.pawns),
-      currentPlayer: newState.currentPlayer,
-      moveHistory: newState.moveHistory,
-      historyIndex: newState.historyIndex,
-      gameOver: newState.gameOver,
-      winner: newState.winner,
-      moveCount: newMoveCount,
-    };
+  // Submit move via server-side Edge Function (validates move destination + computes state)
+  const submitMove = useCallback(async (from: HexCoord, to: HexCoord, moveNumber: number) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      toast.error('Not authenticated');
+      return;
+    }
 
-    const { error } = await supabase.rpc('submit_move', {
-      p_room_id: roomId,
-      p_game_state: JSON.parse(JSON.stringify(serialized)),
-      p_from_q: from.q,
-      p_from_r: from.r,
-      p_to_q: to.q,
-      p_to_r: to.r,
-      p_move_number: moveNumber,
-    } as any);
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-move`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({
+          p_room_id: roomId,
+          p_from_q: from.q,
+          p_from_r: from.r,
+          p_to_q: to.q,
+          p_to_r: to.r,
+          p_move_number: moveNumber,
+        }),
+      }
+    );
 
-    if (error) {
-      console.error('Move rejected by server:', error.message);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Move rejected by server:', errorData.error || response.statusText);
       toast.error('Невалиден ход');
       // Reload state from server
       const { data } = await supabase
@@ -269,8 +276,8 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
             winner,
           };
 
-          // Submit to server (validates turn & piece ownership)
-          submitMove(newState, newMoveCount, from, to, move.moveNumber);
+          // Submit to server (validates move destination + computes state server-side)
+          submitMove(from, to, move.moveNumber);
 
           return newState;
         }
