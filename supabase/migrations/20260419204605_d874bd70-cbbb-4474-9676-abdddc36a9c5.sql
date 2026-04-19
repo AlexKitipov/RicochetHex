@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.submit_move(uuid, jsonb, integer, integer, integer, integer, integer);
