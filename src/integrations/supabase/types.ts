@@ -160,18 +160,6 @@ export type Database = {
     Functions: {
       join_room: { Args: { p_room_code: string }; Returns: string }
       request_rematch: { Args: { p_room_id: string }; Returns: string }
-      submit_move: {
-        Args: {
-          p_from_q: number
-          p_from_r: number
-          p_game_state: Json
-          p_move_number: number
-          p_room_id: string
-          p_to_q: number
-          p_to_r: number
-        }
-        Returns: undefined
-      }
     }
     Enums: {
       [_ in never]: never
