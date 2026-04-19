@@ -350,6 +350,8 @@ Deno.serve(async (req) => {
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    console.error("validate-move error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    return new Response(JSON.stringify({ error: "Internal server error", detail: message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

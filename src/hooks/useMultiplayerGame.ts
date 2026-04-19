@@ -166,8 +166,8 @@ export function useMultiplayerGame({ roomId, userId, myColor, isPlaying }: UseMu
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('Move rejected by server:', errorData.error || response.statusText);
-      toast.error('Невалиден ход');
+      console.error('Move rejected by server:', response.status, errorData);
+      toast.error(errorData.error ? `Невалиден ход: ${errorData.error}` : 'Невалиден ход');
       // Reload state from server
       const { data } = await supabase
         .from('game_rooms')
