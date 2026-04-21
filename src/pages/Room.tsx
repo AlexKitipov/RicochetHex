@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useMultiplayerGame } from '@/hooks/useMultiplayerGame';
@@ -30,6 +30,7 @@ const Room: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
   const { playSound } = useSoundEffects();
   const [room, setRoom] = useState<RoomData | null>(null);
@@ -91,8 +92,10 @@ const Room: React.FC = () => {
   }, [roomId]);
 
   useEffect(() => {
-    if (!loading && !user) navigate('/auth');
-  }, [loading, user, navigate]);
+    if (!loading && !user) {
+      navigate(`/auth?redirect=${encodeURIComponent(location.pathname)}&reason=auth-required`, { replace: true });
+    }
+  }, [loading, user, navigate, location.pathname]);
 
   const isHost = user?.id === room?.host_id;
   const isGuest = user?.id === room?.guest_id;
