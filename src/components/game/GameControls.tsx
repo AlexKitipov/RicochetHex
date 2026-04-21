@@ -212,6 +212,14 @@ export const GameControls: React.FC<GameControlsProps> = ({
                     <p>A pawn trapped between two of yours in a straight line becomes neutralized.</p>
                   </section>
                   <section>
+                    <h4 className="font-semibold text-foreground mb-0.5">♺ Recover</h4>
+                    <p>A neutralized pawn is reactivated when its neutralizing opponents are no longer flanking it.</p>
+                  </section>
+                  <section>
+                    <h4 className="font-semibold text-foreground mb-0.5">💥 Capture</h4>
+                    <p>An opponent pawn is removed from the board when surrounded in specific formations by your pawns.</p>
+                  </section>
+                  <section>
                     <h4 className="font-semibold text-foreground mb-0.5">⌨️ Shortcuts</h4>
                     <p><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs border border-border">Ctrl+Z</kbd> Undo · <kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs border border-border">Ctrl+Y</kbd> Redo</p>
                   </section>
