@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
-import { LogIn, UserPlus, User, ChevronRight } from 'lucide-react';
+import { LogIn, UserPlus, User, ChevronRight, CircleAlert } from 'lucide-react';
 import { toast } from 'sonner';
 
 type AuthTab = 'login' | 'signup' | 'guest';
@@ -15,18 +15,37 @@ const Auth: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
   const [guestName, setGuestName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loginFeedback, setLoginFeedback] = useState<string | null>(null);
   const { signUp, signIn, signInAsGuest } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const redirectTarget = useMemo(() => {
+    const redirect = searchParams.get('redirect');
+    return redirect && redirect.startsWith('/') ? redirect : '/lobby';
+  }, [searchParams]);
+
+  const authNotice = useMemo(() => {
+    const reason = searchParams.get('reason');
+    if (reason === 'auth-required') {
+      return redirectTarget === '/lobby'
+        ? 'Please sign in to continue to online multiplayer.'
+        : 'Please sign in first and you will continue automatically.';
+    }
+    return null;
+  }, [redirectTarget, searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginFeedback(null);
     setIsLoading(true);
     const { error } = await signIn(email, password);
     setIsLoading(false);
     if (error) {
-      toast.error(error.message);
+      setLoginFeedback('Sign in with the email address you registered with. Nickname is only used as your player name.');
+      toast.error('Could not sign in. Use your email address and password.');
     } else {
-      navigate('/lobby');
+      navigate(redirectTarget);
     }
   };
 
@@ -43,7 +62,7 @@ const Auth: React.FC = () => {
       toast.error(error.message);
     } else {
       toast.success('Account created!');
-      navigate('/lobby');
+      navigate(redirectTarget);
     }
   };
 
@@ -54,7 +73,7 @@ const Auth: React.FC = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      navigate('/lobby');
+      navigate(redirectTarget);
     }
   };
 
@@ -82,7 +101,13 @@ const Auth: React.FC = () => {
         </div>
 
         <div className="glass rounded-2xl p-6 space-y-5 shadow-xl">
-          {/* Tab selection */}
+          {(authNotice || loginFeedback) && (
+            <div className="rounded-xl border border-border bg-secondary/40 px-3 py-2 text-xs text-foreground flex items-start gap-2" role="status">
+              <CircleAlert className="h-4 w-4 mt-0.5 shrink-0 text-primary" aria-hidden="true" />
+              <p>{loginFeedback ?? authNotice}</p>
+            </div>
+          )}
+
           <div className="grid grid-cols-3 gap-2">
             {tabs.map(({ key, label, icon: Icon }) => (
               <button
@@ -101,7 +126,6 @@ const Auth: React.FC = () => {
             ))}
           </div>
 
-          {/* Login form */}
           {tab === 'login' && (
             <form onSubmit={handleLogin} className="space-y-3">
               <Input
@@ -120,6 +144,9 @@ const Auth: React.FC = () => {
                 required
                 className="bg-secondary/50"
               />
+              <p className="text-[10px] text-muted-foreground text-center">
+                Sign in with your email address and password. Your nickname is only shown in-game.
+              </p>
               <Button type="submit" disabled={isLoading} className="w-full bg-gradient-to-r from-primary to-primary/80 rounded-xl group">
                 {isLoading ? 'Loading...' : 'Login'}
                 <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
@@ -127,7 +154,6 @@ const Auth: React.FC = () => {
             </form>
           )}
 
-          {/* Signup form */}
           {tab === 'signup' && (
             <form onSubmit={handleSignup} className="space-y-3">
               <Input
@@ -162,7 +188,6 @@ const Auth: React.FC = () => {
             </form>
           )}
 
-          {/* Guest mode */}
           {tab === 'guest' && (
             <div className="space-y-3">
               <Input
@@ -182,7 +207,6 @@ const Auth: React.FC = () => {
             </div>
           )}
 
-          {/* Back to local play */}
           <div className="text-center">
             <button
               onClick={() => navigate('/')}

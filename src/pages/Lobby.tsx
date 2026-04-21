@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 const Lobby: React.FC = () => {
   const { user, profile, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [roomCode, setRoomCode] = useState('');
   const [hostColor, setHostColor] = useState<PlayerColor>('blue');
   const [creating, setCreating] = useState(false);
@@ -20,9 +21,9 @@ const Lobby: React.FC = () => {
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/auth');
+      navigate(`/auth?redirect=${encodeURIComponent(location.pathname)}&reason=auth-required`, { replace: true });
     }
-  }, [loading, user, navigate]);
+  }, [loading, user, navigate, location.pathname]);
 
   const createRoom = async () => {
     if (!user) return;

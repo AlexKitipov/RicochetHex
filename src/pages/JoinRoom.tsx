@@ -14,7 +14,8 @@ const JoinRoom: React.FC = () => {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      navigate(`/auth?redirect=/join/${code}`);
+      const redirectPath = code ? `/join/${code}` : '/lobby';
+      navigate(`/auth?redirect=${encodeURIComponent(redirectPath)}&reason=auth-required`, { replace: true });
       return;
     }
     if (!code || joining) return;
