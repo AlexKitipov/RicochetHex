@@ -59,7 +59,12 @@ export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName,
   }, [roomId]);
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Defer to next frame so the browser batches layout reads/writes
+    // and avoids a forced synchronous reflow after DOM mutation.
+    const id = requestAnimationFrame(() => {
+      scrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    return () => cancelAnimationFrame(id);
   }, [messages]);
 
   const sendMessage = async () => {
