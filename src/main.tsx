@@ -11,10 +11,21 @@ if (import.meta.env.DEV) {
   const isHookQueueError = (msg: unknown) =>
     typeof msg === "string" && msg.includes("Should have a queue");
 
-  const tryReload = (msg: unknown) => {
+  const tryReload = (msg: unknown, source: string, raw: unknown) => {
     if (!isHookQueueError(msg)) return;
-    if (sessionStorage.getItem(RELOAD_KEY)) return;
+    if (sessionStorage.getItem(RELOAD_KEY)) {
+      console.warn(
+        `[HMR recovery] Hook-order error detected again from ${source}; skipping reload to avoid a loop.`,
+        raw
+      );
+      return;
+    }
     sessionStorage.setItem(RELOAD_KEY, "1");
+    console.warn(
+      `[HMR recovery] Fast Refresh hook-order desync detected from ${source}. Reloading once to recover. Reason:`,
+      msg,
+      raw
+    );
     setTimeout(() => window.location.reload(), 50);
   };
 
