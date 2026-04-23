@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef, useEffect } from 'react';
+import { useCallback, useRef, useSyncExternalStore } from 'react';
 
 type SoundType = 'select' | 'move' | 'ricochet' | 'capture' | 'victory' | 'chat' | 'yourTurn' | 'rematch';
 
@@ -44,7 +44,7 @@ const soundConfigs: Record<SoundType, (ctx: AudioContext) => void> = {
     createOscillator(ctx, 100, 0.4, 'triangle', 0.2);
   },
   victory: (ctx) => {
-    const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+    const notes = [523, 659, 784, 1047];
     notes.forEach((freq, i) => {
       setTimeout(() => createOscillator(ctx, freq, 0.3, 'sine', 0.25), i * 150);
     });
@@ -65,8 +65,45 @@ const soundConfigs: Record<SoundType, (ctx: AudioContext) => void> = {
   }
 };
 
+// ============ Shared global state across all hook instances ============
+const STORAGE_KEY = 'ricochet:soundEnabled';
+
+const readInitial = (): boolean => {
+  if (typeof window === 'undefined') return true;
+  try {
+    const v = window.localStorage.getItem(STORAGE_KEY);
+    return v === null ? true : v === 'true';
+  } catch {
+    return true;
+  }
+};
+
+let soundEnabledState = readInitial();
+const listeners = new Set<() => void>();
+
+const subscribe = (cb: () => void) => {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+};
+
+const getSnapshot = () => soundEnabledState;
+const getServerSnapshot = () => true;
+
+const setSoundEnabled = (next: boolean) => {
+  if (soundEnabledState === next) return;
+  soundEnabledState = next;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, String(next));
+  } catch {
+    /* ignore */
+  }
+  listeners.forEach((l) => l());
+};
+
 export function useSoundEffects() {
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const soundEnabled = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const getAudioContext = useCallback(() => {
@@ -77,7 +114,7 @@ export function useSoundEffects() {
   }, []);
 
   const playSound = useCallback((type: SoundType) => {
-    if (!soundEnabled) return;
+    if (!soundEnabledState) return;
     
     try {
       const ctx = getAudioContext();
@@ -88,10 +125,10 @@ export function useSoundEffects() {
     } catch (error) {
       console.warn('Audio playback failed:', error);
     }
-  }, [soundEnabled, getAudioContext]);
+  }, [getAudioContext]);
 
   const toggleSound = useCallback(() => {
-    setSoundEnabled(prev => !prev);
+    setSoundEnabled(!soundEnabledState);
   }, []);
 
   return {
