@@ -29,10 +29,10 @@ if (import.meta.env.DEV) {
     setTimeout(() => window.location.reload(), 50);
   };
 
-  window.addEventListener("error", (e) => tryReload(e.message));
+  window.addEventListener("error", (e) => tryReload(e.message, "window.error", e.error ?? e));
   window.addEventListener("unhandledrejection", (e) => {
     const reason = (e.reason && (e.reason.message ?? e.reason)) as unknown;
-    tryReload(reason);
+    tryReload(reason, "unhandledrejection", e.reason);
   });
 
   // Clear the guard once the app successfully mounts a new build.
