@@ -12,10 +12,11 @@ interface UseAIGameOptions {
   playerColor: PlayerColor;
   blueDifficulty?: AIDifficulty;
   redDifficulty?: AIDifficulty;
+  enabled?: boolean;
 }
 
 export function useAIGame(options: UseAIGameOptions) {
-  const { mode, difficulty, playerColor, blueDifficulty = 'medium', redDifficulty = 'medium' } = options;
+  const { mode, difficulty, playerColor, blueDifficulty = 'medium', redDifficulty = 'medium', enabled = true } = options;
   const gameStateHook = useGameState();
   const { gameState, selectHex, executeMoveDirect, resetGame: baseResetGame, getPawnSnapshots, loadGameState } = gameStateHook;
   const { saveGame: saveToStorage, loadGame: loadFromStorage, hasSavedGame, deleteSavedGame } = useGameSaveLoad();  
