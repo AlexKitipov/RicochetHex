@@ -88,6 +88,12 @@ export function useAIGame(options: UseAIGameOptions) {
     }
 
     aiTimeoutRef.current = setTimeout(() => {
+      // Hard stop: if disabled (e.g. user returned to main menu) abort entirely.
+      if (!enabledRef.current) {
+        console.debug('[useAIGame] timeout fired but AI is disabled; aborting');
+        setIsAIThinking(false);
+        return;
+      }
       try {
         // Use ref to get current state inside timeout
         const stateAtExecution = gameStateRef.current;
@@ -95,6 +101,12 @@ export function useAIGame(options: UseAIGameOptions) {
 
         const move = getAIMove(stateAtExecution.pawns, currentColor, currentDifficulty);
         console.debug('[useAIGame] getAIMove result', { move });
+
+        // Re-check after the (potentially long) AI computation.
+        if (!enabledRef.current) {
+          console.debug('[useAIGame] AI disabled after compute; discarding move');
+          return;
+        }
         
         if (move) {
           try {
@@ -105,14 +117,13 @@ export function useAIGame(options: UseAIGameOptions) {
           }
         } else {
           console.warn('[useAIGame] No move returned by getAIMove; attempting fallbacks');
-          // Try medium-style best move or random to avoid lock
           try {
             const fallback = getBestMove(stateAtExecution.pawns, currentColor) || getRandomMove(stateAtExecution.pawns, currentColor);
-            if (fallback) {
+            if (fallback && enabledRef.current) {
               executeMoveDirect(fallback.from, fallback.to);
               console.debug('[useAIGame] executeMoveDirect succeeded with fallback', { from: fallback.from, to: fallback.to });
-            } else {
-              console.error('[useAIGame] No fallback move available — possible terminal position or move-generation bug', { pawnsCount: stateAtExecution.pawns.size });
+            } else if (!fallback) {
+              console.error('[useAIGame] No fallback move available', { pawnsCount: stateAtExecution.pawns.size });
             }
           } catch (fallbackErr) {
             console.error('[useAIGame] Fallback execution failed', fallbackErr);
@@ -121,7 +132,6 @@ export function useAIGame(options: UseAIGameOptions) {
       } catch (err) {
         console.error('[useAIGame] Error while computing/executing AI move', err);
       } finally {
-        // Ensure the thinking flag is always reset
         setIsAIThinking(false);
       }
     }, thinkingTime);
