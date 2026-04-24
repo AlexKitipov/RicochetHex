@@ -20,8 +20,16 @@
     <link rel="preconnect" href="https://cdn.gpteng.co" crossorigin />
   </head>
 
+    <style>
+      body{margin:0;background:hsl(225 22% 7%);color:hsl(210 40% 96%);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+      .lcp-shell{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:1.5rem 1rem 0}
+      .lcp-shell>div{width:100%;text-align:center}
+      .lcp-h1{font-size:1.875rem;line-height:2.25rem;font-weight:700;letter-spacing:-.025em;margin:0 0 .25rem}
+    </style>
+  </head>
+
   <body>
-    <div id="root"><h1 style="font:700 1.875rem/2.25rem system-ui,-apple-system,sans-serif;letter-spacing:-.025em;text-align:center;margin:1.5rem 1rem .25rem;color:#e2e8f0">RicochetHex</h1></div>
+    <div id="root"><main class="lcp-shell"><div><div><h1 class="lcp-h1 text-3xl font-bold tracking-tight text-foreground mb-1">RicochetHex</h1></div></div></main></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
