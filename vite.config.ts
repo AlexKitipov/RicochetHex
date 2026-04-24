@@ -26,16 +26,24 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks(id) {
           if (!id.includes("node_modules")) return;
+          // Keep tiny utilities together (used everywhere, ~2-3 KB total).
           if (
-            id.includes("@radix-ui") ||
-            id.includes("lucide-react") ||
-            id.includes("sonner") ||
             id.includes("class-variance-authority") ||
             id.includes("clsx") ||
             id.includes("tailwind-merge")
           ) {
-            return "ui-core";
+            return "ui-utils";
           }
+          // Split each Radix primitive into its own chunk so routes only
+          // load the primitives they actually import (avoids ~21 KB of
+          // unused JS on the home route).
+          if (id.includes("@radix-ui")) {
+            const match = id.match(/@radix-ui\/([^/]+)/);
+            return match ? `radix-${match[1]}` : "radix";
+          }
+          // Icons are imported per-name; let Rollup split them per route.
+          if (id.includes("lucide-react")) return "icons";
+          if (id.includes("sonner")) return "sonner";
           if (
             id.includes("react-dom") ||
             id.includes("scheduler") ||
