@@ -128,8 +128,8 @@ export function useAIGame(options: UseAIGameOptions) {
   // Trigger AI move when it's AI's turn - use a stable interval-based approach
   // to avoid issues with effect cleanup canceling pending AI moves
   useEffect(() => {
-    // Only run in AI modes
-    if (mode === 'local') return;
+    // Only run in AI modes and when explicitly enabled
+    if (mode === 'local' || !enabled) return;
     
     const checkAndExecuteAI = () => {
       const currentState = gameStateRef.current;
@@ -154,8 +154,13 @@ export function useAIGame(options: UseAIGameOptions) {
     
     return () => {
       clearInterval(intervalId);
+      // Also cancel any pending AI move when disabled/unmounted
+      if (aiTimeoutRef.current) {
+        clearTimeout(aiTimeoutRef.current);
+        aiTimeoutRef.current = null;
+      }
     };
-  }, [mode, aiColor, executeAIMove]);
+  }, [mode, aiColor, executeAIMove, enabled]);
 
   // Cleanup any pending AI timeout only on unmount.
   // NOTE: We intentionally do NOT clear the timeout in the effect above,
