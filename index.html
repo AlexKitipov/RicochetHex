@@ -18,8 +18,8 @@
 
     <!-- Preconnect to external origins for faster loading -->
     <link rel="preconnect" href="https://cdn.gpteng.co" crossorigin />
-  </head>
 
+    <!-- Critical inline CSS for LCP element to paint immediately, before React hydrates -->
     <style>
       body{margin:0;background:hsl(225 22% 7%);color:hsl(210 40% 96%);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
       .lcp-shell{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:1.5rem 1rem 0}
