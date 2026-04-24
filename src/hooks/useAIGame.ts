@@ -27,11 +27,13 @@ export function useAIGame(options: UseAIGameOptions) {
   const gameStateRef = useRef(gameState);
   const isAIThinkingRef = useRef(isAIThinking);
   const isPausedRef = useRef(isPaused);
+  const enabledRef = useRef(enabled);
   
   // Keep refs updated
   gameStateRef.current = gameState;
   isAIThinkingRef.current = isAIThinking;
   isPausedRef.current = isPaused;
+  enabledRef.current = enabled;
   
   // AI plays as opponent color in vs-ai mode
   const aiColor = getOpponentColor(playerColor);
