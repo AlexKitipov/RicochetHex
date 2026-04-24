@@ -43,7 +43,8 @@ const Index = () => {
     difficulty: aiDifficulty, 
     playerColor,
     blueDifficulty,
-    redDifficulty
+    redDifficulty,
+    enabled: gameStarted
   });
   // ============ END OF HOOKS ============
   
