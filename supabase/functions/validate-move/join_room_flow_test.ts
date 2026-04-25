@@ -110,6 +110,43 @@ Deno.test("guest can list waiting rooms, join via RPC, and room flips to playing
       secondJoinErr,
       "join_room must reject a second guest trying to overwrite the slot",
     );
+    assert(
+      /not found or already full/i.test(secondJoinErr!.message),
+      `expected clear 'not found or already full' error, got: ${secondJoinErr!.message}`,
+    );
+
+    // 7. join_room must reject a completely invalid / random room code
+    //    with the same clear error message.
+    const randomGuest = await signInAsGuest("Random-Code-Guest");
+    const { data: invalidData, error: invalidErr } = await randomGuest.client.rpc(
+      "join_room",
+      { p_room_code: "ZZZZZZ" },
+    );
+    assertEquals(invalidData, null, "invalid code must not return a room id");
+    assertExists(invalidErr, "join_room must reject an unknown room code");
+    assert(
+      /not found or already full/i.test(invalidErr!.message),
+      `expected clear 'not found or already full' error for invalid code, got: ${invalidErr!.message}`,
+    );
+
+    // 8. join_room must reject joining a non-waiting room (e.g. status='finished').
+    //    Flip the host's room to 'finished' and confirm a fresh guest is rejected.
+    const { error: finishErr } = await host.client
+      .from("game_rooms")
+      .update({ status: "finished", guest_id: null })
+      .eq("id", room!.id);
+    assertEquals(finishErr, null, `failed to set room finished: ${finishErr?.message}`);
+
+    const lateGuest = await signInAsGuest("Late-Guest-Test");
+    const { data: lateData, error: lateErr } = await lateGuest.client.rpc("join_room", {
+      p_room_code: room!.room_code,
+    });
+    assertEquals(lateData, null, "non-waiting room must not return a room id");
+    assertExists(lateErr, "join_room must reject a non-waiting room");
+    assert(
+      /not found or already full/i.test(lateErr!.message),
+      `expected clear 'not found or already full' error for non-waiting room, got: ${lateErr!.message}`,
+    );
   } finally {
     // Cleanup: host deletes the room via "Host can delete own room" policy.
     await host.client.from("game_rooms").delete().eq("id", room!.id);
