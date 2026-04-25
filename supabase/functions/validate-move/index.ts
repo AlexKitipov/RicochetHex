@@ -202,16 +202,74 @@ Deno.serve(async (req) => {
 
     const userId = userData.user.id;
 
-    const { p_room_id, p_from_q, p_from_r, p_to_q, p_to_r, p_move_number } = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON body", code: "invalid_json" }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
-    // Validate input types
-    if (!p_room_id || typeof p_from_q !== "number" || typeof p_from_r !== "number" ||
-        typeof p_to_q !== "number" || typeof p_to_r !== "number" || typeof p_move_number !== "number")
-      return new Response(JSON.stringify({ error: "Invalid input parameters" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { p_room_id, p_from_q, p_from_r, p_to_q, p_to_r, p_move_number } = body ?? {};
 
-    // Validate coordinates are within board bounds
-    if (!isValidHex({ q: p_from_q, r: p_from_r }) || !isValidHex({ q: p_to_q, r: p_to_r }))
-      return new Response(JSON.stringify({ error: "Coordinates out of bounds" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const fieldErrors: Record<string, string> = {};
+
+    // p_room_id: must be a non-empty UUID string
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (typeof p_room_id !== "string" || p_room_id.length === 0) {
+      fieldErrors.p_room_id = "p_room_id is required and must be a string";
+    } else if (!uuidRegex.test(p_room_id)) {
+      fieldErrors.p_room_id = "p_room_id must be a valid UUID";
+    }
+
+    // Coordinate fields: must be finite integers
+    const coordFields: Array<["p_from_q" | "p_from_r" | "p_to_q" | "p_to_r", unknown]> = [
+      ["p_from_q", p_from_q],
+      ["p_from_r", p_from_r],
+      ["p_to_q", p_to_q],
+      ["p_to_r", p_to_r],
+    ];
+    for (const [name, val] of coordFields) {
+      if (typeof val !== "number" || !Number.isFinite(val) || !Number.isInteger(val)) {
+        fieldErrors[name] = `${name} must be a finite integer`;
+      }
+    }
+
+    if (typeof p_move_number !== "number" || !Number.isInteger(p_move_number) || p_move_number < 0) {
+      fieldErrors.p_move_number = "p_move_number must be a non-negative integer";
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      return new Response(
+        JSON.stringify({ error: "Invalid input parameters", code: "invalid_input", fieldErrors }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Validate coordinates are within board bounds (only after type checks)
+    const boundsErrors: Record<string, string> = {};
+    if (!isValidHex({ q: p_from_q, r: p_from_r })) {
+      boundsErrors.from = `from (${p_from_q},${p_from_r}) is outside the board`;
+    }
+    if (!isValidHex({ q: p_to_q, r: p_to_r })) {
+      boundsErrors.to = `to (${p_to_q},${p_to_r}) is outside the board`;
+    }
+    if (Object.keys(boundsErrors).length > 0) {
+      return new Response(
+        JSON.stringify({ error: "Coordinates out of bounds", code: "coords_out_of_bounds", fieldErrors: boundsErrors }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Reject no-op moves (from == to)
+    if (p_from_q === p_to_q && p_from_r === p_to_r) {
+      return new Response(
+        JSON.stringify({ error: "from and to must differ", code: "noop_move" }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     // Use service role to read and update game state
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
