@@ -12,3 +12,4 @@ Allow: /
 
 User-agent: *
 Allow: /
+Sitemap: https://spark-of-wonder-24.lovable.app/sitemap.xml
