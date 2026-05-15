@@ -1,0 +1,16 @@
+# RicochetHex
+
+> Strategic hexagonal chess-style game with ricochet, neutralization, and capture mechanics. Play locally, against AI opponents, or online with friends.
+
+RicochetHex is a browser-based strategy game played on a hexagonal board. Pawns move and capture using ricochet mechanics inspired by classic chess. Modes include local hot-seat play, single-player vs AI (multiple difficulty levels), AI vs AI spectator mode, and real-time online multiplayer rooms.
+
+## Pages
+
+- [Home](/): Main game — choose a mode and play.
+- [Sign in](/auth): Account login and signup for online multiplayer.
+- [Multiplayer Lobby](/lobby): Create or join an online game room.
+
+## Optional
+
+- [robots.txt](/robots.txt)
+- [sitemap.xml](/sitemap.xml)
