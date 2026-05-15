@@ -79,6 +79,11 @@ const Index = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
+      <SEO
+        title="RicochetHex — Hexagonal Strategic Chess"
+        description="Play RicochetHex: a strategic hex-based chess game with ricochet, neutralization, and capture. Local, AI, and online multiplayer in your browser."
+        path="/"
+      />
       {/* Header with gradient accent line */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm shrink-0 relative">
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
