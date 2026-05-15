@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import type { PlayerColor } from '@/lib/hexUtils';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { SEO } from '@/components/SEO';
 
 const Lobby: React.FC = () => {
   const { user, profile, loading, signOut } = useAuth();
