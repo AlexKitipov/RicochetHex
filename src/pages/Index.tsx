@@ -3,6 +3,7 @@ import { GameModeSelector, GameMode } from '@/components/game/GameModeSelector';
 import { useAIGame } from '@/hooks/useAIGame';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { SEO } from '@/components/SEO';
 
 // Lazy load heavy game components (only needed after game starts)
 const HexBoard = lazy(() => import('@/components/game/HexBoard').then(m => ({ default: m.HexBoard })));
@@ -73,11 +74,25 @@ const Index = () => {
   };
   
   if (!gameStarted) {
-    return <GameModeSelector onStart={handleStartGame} />;
+    return (
+      <>
+        <SEO
+          title="RicochetHex — Hexagonal Strategic Chess"
+          description="Play RicochetHex: a strategic hex-based chess game with ricochet, neutralization, and capture. Local, AI, and online multiplayer in your browser."
+          path="/"
+        />
+        <GameModeSelector onStart={handleStartGame} />
+      </>
+    );
   }
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
+      <SEO
+        title="RicochetHex — Hexagonal Strategic Chess"
+        description="Play RicochetHex: a strategic hex-based chess game with ricochet, neutralization, and capture. Local, AI, and online multiplayer in your browser."
+        path="/"
+      />
       {/* Header with gradient accent line */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm shrink-0 relative">
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
