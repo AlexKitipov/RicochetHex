@@ -74,7 +74,16 @@ const Index = () => {
   };
   
   if (!gameStarted) {
-    return <GameModeSelector onStart={handleStartGame} />;
+    return (
+      <>
+        <SEO
+          title="RicochetHex — Hexagonal Strategic Chess"
+          description="Play RicochetHex: a strategic hex-based chess game with ricochet, neutralization, and capture. Local, AI, and online multiplayer in your browser."
+          path="/"
+        />
+        <GameModeSelector onStart={handleStartGame} />
+      </>
+    );
   }
 
   return (
