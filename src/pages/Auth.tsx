@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { LogIn, UserPlus, User, ChevronRight, CircleAlert } from 'lucide-react';
 import { toast } from 'sonner';
+import { SEO } from '@/components/SEO';
 
 type AuthTab = 'login' | 'signup' | 'guest';
 
