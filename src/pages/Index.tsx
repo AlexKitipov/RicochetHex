@@ -80,6 +80,7 @@ const Index = () => {
           title="RicochetHex — Hexagonal Strategic Chess"
           description="Play RicochetHex: a strategic hex-based chess game with ricochet, neutralization, and capture. Local, AI, and online multiplayer in your browser."
           path="/"
+          image="/og-home.jpg"
         />
         <GameModeSelector onStart={handleStartGame} />
       </>
@@ -92,6 +93,7 @@ const Index = () => {
         title="RicochetHex — Hexagonal Strategic Chess"
         description="Play RicochetHex: a strategic hex-based chess game with ricochet, neutralization, and capture. Local, AI, and online multiplayer in your browser."
         path="/"
+        image="/og-home.jpg"
       />
       {/* Header with gradient accent line */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm shrink-0 relative">

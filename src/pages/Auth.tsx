@@ -90,6 +90,7 @@ const Auth: React.FC = () => {
         title="Sign in or sign up — RicochetHex"
         description="Sign in to RicochetHex to play online multiplayer matches, save games, and challenge friends in strategic hex chess."
         path="/auth"
+        image="/og-auth.jpg"
       />
       <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
         <div className="absolute top-1/4 -left-32 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />

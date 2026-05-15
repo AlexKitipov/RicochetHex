@@ -75,6 +75,7 @@ const Lobby: React.FC = () => {
         title="Multiplayer Lobby — RicochetHex"
         description="Create a private RicochetHex room or join a friend's game with a 6-character room code. Real-time hexagonal strategy, online."
         path="/lobby"
+        image="/og-lobby.jpg"
       />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 -left-32 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
