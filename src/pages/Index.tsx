@@ -3,6 +3,7 @@ import { GameModeSelector, GameMode } from '@/components/game/GameModeSelector';
 import { useAIGame } from '@/hooks/useAIGame';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { SEO } from '@/components/SEO';
 
 // Lazy load heavy game components (only needed after game starts)
 const HexBoard = lazy(() => import('@/components/game/HexBoard').then(m => ({ default: m.HexBoard })));
