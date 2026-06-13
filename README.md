@@ -1,73 +1,99 @@
 # Welcome to your Lovable project
 
-## Project info
+🧩 RicochetHex
+Strategic AI Hexagonal Chess
+RicochetHex is a modern strategy game inspired by chess, played on a hexagonal board with unique movement rules, ricochet mechanics, and deep tactical gameplay.
+The game features an AI opponent, multiplayer rooms, real‑time updates, and a clean UI built with a modern frontend stack.
 
-**URL**: https://lovable.dev/projects/0d5b6c95-18ff-485a-9d41-f0e2d816063e
+🌐 Play Online
+Play the live version here:
+https://lovable.dev/projects/0d5b6c95-18ff-485a-9d41-f0e2d816063e
 
-## How can I edit this code?
+🎮 Features
+✔ Hexagonal board with unique movement mechanics
 
-There are several ways of editing your application.
+✔ Smart AI opponent
 
-**Use Lovable**
+✔ Multiplayer rooms (PvP)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/0d5b6c95-18ff-485a-9d41-f0e2d816063e) and start prompting.
+✔ Real‑time move updates
 
-Changes made via Lovable will be committed automatically to this repo.
+✔ Smooth animations and visual effects
 
-**Use your preferred IDE**
+✔ Modern UI with shadcn‑ui + Tailwind CSS
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+✔ Automatic deployments via Lovable
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+🧠 Gameplay Overview
+Each player controls pieces on a hexagonal grid
 
-Follow these steps:
+Pieces can ricochet off edges and other pieces
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+The goal is to outmaneuver and eliminate the opponent
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+The AI analyzes the board and selects optimal moves
 
-# Step 3: Install the necessary dependencies.
-npm i
+Supports both AI and player‑vs‑player modes
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+📸 Screenshots
+(You can add images later — section prepared.)
+
+🛠 Tech Stack
+Vite
+
+React
+
+TypeScript
+
+Tailwind CSS
+
+shadcn‑ui
+
+Lovable.dev (automatic deployments)
+
+📁 Project Structure
+Код
+/src
+  /components     → UI components
+  /logic          → game logic and AI
+  /hooks          → custom hooks
+  /styles         → global styles
+/public           → static assets
+📦 Installation & Development
+sh
+git clone https://github.com/AlexKitipov/RicochetHex
+cd RicochetHex
+npm install
 npm run dev
-```
+🚀 Deployment (Lovable)
+The project deploys automatically through Lovable.
 
-**Edit a file directly in GitHub**
+To publish:
+Share → Publish inside Lovable.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+🌐 Custom Domain
+You can connect your own domain:
+Project → Settings → Domains → Connect Domain
 
-**Use GitHub Codespaces**
+Documentation:
+https://docs.lovable.dev/features/custom-domain#custom-domain
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+🗺 Roadmap
+[ ] Improved AI
 
-## What technologies are used for this project?
+[ ] New piece types
 
-This project is built with:
+[ ] Ranked mode
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+[ ] Move history
 
-## How can I deploy this project?
+[ ] Mobile optimization
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+[ ] Sound effects
 
-## Can I connect a custom domain to my Lovable project?
+🏷 License
+MIT License
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+👤 Author
+Aleksandar Kitipov  
+Development, design, logic, AI, UI, architecture.
