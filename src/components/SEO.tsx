@@ -30,6 +30,7 @@ export const SEO: React.FC<SEOProps> = ({ title, description, path, image, type 
       {imageUrl && <meta property="og:image" content={imageUrl} />}
       {imageUrl && <meta property="og:image:width" content="1200" />}
       {imageUrl && <meta property="og:image:height" content="640" />}
+      <meta name="twitter:card" content={imageUrl ? "summary_large_image" : "summary"} />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       {imageUrl && <meta name="twitter:image" content={imageUrl} />}
