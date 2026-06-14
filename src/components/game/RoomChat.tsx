@@ -133,6 +133,7 @@ export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName,
           onChange={e => setInput(e.target.value.slice(0, 1000))}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
+          aria-label="Chat message"
           className="h-8 text-xs"
           disabled={sending}
           maxLength={1000}
@@ -143,8 +144,9 @@ export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName,
           className="h-8 w-8 shrink-0"
           onClick={sendMessage}
           disabled={!input.trim() || sending}
+          aria-label="Send chat message"
         >
-          <Send className="h-3.5 w-3.5" />
+          <Send className="h-3.5 w-3.5" aria-hidden="true" />
         </Button>
       </div>
     </div>
