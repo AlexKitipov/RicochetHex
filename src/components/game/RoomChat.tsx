@@ -97,8 +97,8 @@ export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName,
   return (
     <div className="flex flex-col h-full border border-border rounded-xl bg-card/60 backdrop-blur-sm overflow-hidden">
       <div className="px-3 py-2 border-b border-border flex items-center gap-2">
-        <MessageCircle className="h-3.5 w-3.5 text-primary" />
-        <span className="text-xs font-semibold text-foreground">Chat</span>
+        <MessageCircle className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+        <h2 className="text-xs font-semibold text-foreground">Chat</h2>
       </div>
 
       <ScrollArea className="flex-1 px-3 py-2">
