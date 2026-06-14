@@ -169,6 +169,7 @@ const Auth: React.FC = () => {
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
                 required
+                maxLength={50}
                 className="bg-secondary/50"
               />
               <Input
