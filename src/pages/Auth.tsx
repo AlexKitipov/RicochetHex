@@ -138,6 +138,7 @@ const Auth: React.FC = () => {
               <Input
                 type="email"
                 placeholder="Email"
+                aria-label="Email address"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
@@ -146,6 +147,7 @@ const Auth: React.FC = () => {
               <Input
                 type="password"
                 placeholder="Password"
+                aria-label="Password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
@@ -166,6 +168,7 @@ const Auth: React.FC = () => {
               <Input
                 type="text"
                 placeholder="Player name"
+                aria-label="Player name"
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
                 required
@@ -175,6 +178,7 @@ const Auth: React.FC = () => {
               <Input
                 type="email"
                 placeholder="Email"
+                aria-label="Email address"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
@@ -183,6 +187,7 @@ const Auth: React.FC = () => {
               <Input
                 type="password"
                 placeholder="Password (min. 6 characters)"
+                aria-label="Password (minimum 6 characters)"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
@@ -201,6 +206,7 @@ const Auth: React.FC = () => {
               <Input
                 type="text"
                 placeholder="Nickname (optional)"
+                aria-label="Guest nickname (optional)"
                 value={guestName}
                 onChange={e => setGuestName(e.target.value)}
                 maxLength={50}

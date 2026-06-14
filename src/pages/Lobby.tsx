@@ -160,6 +160,7 @@ const Lobby: React.FC = () => {
             <div className="flex gap-2">
               <Input
                 placeholder="Enter code (e.g. AB12CD)"
+                aria-label="Room code"
                 value={roomCode}
                 onChange={e => setRoomCode(e.target.value.toUpperCase())}
                 maxLength={6}
@@ -168,9 +169,10 @@ const Lobby: React.FC = () => {
               <Button
                 onClick={joinRoom}
                 disabled={joining || !roomCode.trim()}
+                aria-label="Join room"
                 className="shrink-0 bg-gradient-to-r from-accent to-accent/80 text-accent-foreground rounded-xl"
               >
-                {joining ? <Loader2 className="h-4 w-4 animate-spin" /> : <JoinIcon className="h-4 w-4" />}
+                {joining ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <JoinIcon className="h-4 w-4" aria-hidden="true" />}
               </Button>
             </div>
           </div>
