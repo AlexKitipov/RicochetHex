@@ -130,11 +130,12 @@ export const RoomChat: React.FC<RoomChatProps> = ({ roomId, userId, displayName,
       <div className="px-2 py-2 border-t border-border flex gap-1.5">
         <Input
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={e => setInput(e.target.value.slice(0, 1000))}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
           className="h-8 text-xs"
           disabled={sending}
+          maxLength={1000}
         />
         <Button
           size="icon"

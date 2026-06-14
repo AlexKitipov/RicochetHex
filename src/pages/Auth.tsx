@@ -169,6 +169,7 @@ const Auth: React.FC = () => {
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
                 required
+                maxLength={50}
                 className="bg-secondary/50"
               />
               <Input
@@ -202,6 +203,7 @@ const Auth: React.FC = () => {
                 placeholder="Nickname (optional)"
                 value={guestName}
                 onChange={e => setGuestName(e.target.value)}
+                maxLength={50}
                 className="bg-secondary/50"
               />
               <p className="text-[10px] text-muted-foreground text-center">
