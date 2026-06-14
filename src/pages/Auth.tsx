@@ -138,6 +138,7 @@ const Auth: React.FC = () => {
               <Input
                 type="email"
                 placeholder="Email"
+                aria-label="Email address"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
@@ -146,6 +147,7 @@ const Auth: React.FC = () => {
               <Input
                 type="password"
                 placeholder="Password"
+                aria-label="Password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
