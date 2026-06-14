@@ -172,7 +172,7 @@ const Room: React.FC = () => {
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">
               <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                Room
+                Game Room
               </span>
             </h1>
           </div>
@@ -186,12 +186,12 @@ const Room: React.FC = () => {
                 <span className="text-4xl font-mono font-bold tracking-[0.3em] text-foreground">
                   {room.room_code}
                 </span>
-                <Button variant="ghost" size="icon" onClick={copyRoomCode} className="shrink-0">
-                  <Copy className="h-4 w-4" />
+                <Button variant="ghost" size="icon" onClick={copyRoomCode} aria-label="Copy room code" className="shrink-0">
+                  <Copy className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </div>
               <Button variant="outline" size="sm" onClick={copyRoomLink} className="text-xs">
-                <Copy className="h-3 w-3 mr-1" />
+                <Copy className="h-3 w-3 mr-1" aria-hidden="true" />
                 Copy invite link
               </Button>
             </div>
