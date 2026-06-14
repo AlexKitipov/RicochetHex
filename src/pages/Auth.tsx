@@ -206,6 +206,7 @@ const Auth: React.FC = () => {
               <Input
                 type="text"
                 placeholder="Nickname (optional)"
+                aria-label="Guest nickname (optional)"
                 value={guestName}
                 onChange={e => setGuestName(e.target.value)}
                 maxLength={50}
