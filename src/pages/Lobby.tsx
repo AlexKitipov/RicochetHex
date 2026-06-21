@@ -37,7 +37,8 @@ const Lobby: React.FC = () => {
     setCreating(false);
 
     if (error) {
-      toast.error('Error creating room: ' + error.message);
+      console.error('createRoom error:', error);
+      toast.error('Could not create room. Please try again.');
       return;
     }
     if (data) {
