@@ -51,10 +51,12 @@ const Lobby: React.FC = () => {
     setJoining(true);
     const code = roomCode.trim().toUpperCase();
 
-    const { data: roomId, error } = await supabase
-      .rpc('join_room', { p_room_code: code });
+    const { data, error } = await supabase.functions.invoke('join-room', {
+      body: { p_room_code: code },
+    });
 
     setJoining(false);
+    const roomId = (data as { room_id?: string } | null)?.room_id;
     if (error || !roomId) {
       toast.error('Room not found or already full');
       return;

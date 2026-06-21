@@ -130,9 +130,10 @@ const Room: React.FC = () => {
   const requestRematch = useCallback(async () => {
     if (!room || !user) return;
 
-    const { data: result, error } = await supabase.rpc('request_rematch', {
-      p_room_id: room.id,
+    const { data, error } = await supabase.functions.invoke('request-rematch', {
+      body: { p_room_id: room.id },
     });
+    const result = (data as { result?: string } | null)?.result;
 
     if (error) {
       toast.error('Error requesting rematch');

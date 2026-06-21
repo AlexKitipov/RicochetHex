@@ -158,8 +158,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      join_room: { Args: { p_room_code: string }; Returns: string }
-      request_rematch: { Args: { p_room_id: string }; Returns: string }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
